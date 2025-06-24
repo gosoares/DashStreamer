@@ -1,0 +1,3 @@
+python-ffmpeg-video-streaming
+flask
+flask-cors
