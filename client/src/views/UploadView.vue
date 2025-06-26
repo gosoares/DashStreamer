@@ -43,7 +43,7 @@
             <!-- Processing Status -->
             <div v-if="processingStatus" class="processing-status">
                 <div class="spinner"></div>
-                <p>Processing video... {{ processingStatus }}</p>
+                <p>Processing video... {{ capitalizeStatus(processingStatus) }}</p>
             </div>
 
             <!-- Error Message -->
@@ -110,18 +110,22 @@ export default {
                 const response = await ApiService.getVideoInfo(videoId);
                 const status = response.data.status;
 
+                console.log('Polling status for video', videoId, ':', status);
+
                 if (status === 'done') {
+                    processingStatus.value = '';
                     router.push('/');
                 } else if (status === 'error') {
                     errorMessage.value = response.data.error || 'Processing failed';
                     processingStatus.value = '';
                 } else {
                     processingStatus.value = status;
+                    // Continue polling every 2 seconds
                     setTimeout(() => pollProcessingStatus(videoId), 2000);
                 }
             } catch (error) {
                 console.error('Error polling status:', error);
-                errorMessage.value = 'Failed to check processing status';
+                errorMessage.value = `Failed to check processing status: ${error.response?.data?.error || error.message}`;
                 processingStatus.value = '';
             }
         };
@@ -142,13 +146,19 @@ export default {
                 });
 
                 const videoId = response.data.id;
-                processingStatus.value = 'processing';
-                pollProcessingStatus(videoId);
+                console.log('Video uploaded with ID:', videoId);
+                processingStatus.value = 'pending';
+                // Start polling immediately
+                setTimeout(() => pollProcessingStatus(videoId), 1000);
             } catch (error) {
                 console.error('Upload error:', error);
                 errorMessage.value = error.response?.data?.error || 'Upload failed';
                 uploadProgress.value = 0;
             }
+        };
+
+        const capitalizeStatus = (status) => {
+            return status.charAt(0).toUpperCase() + status.slice(1);
         };
 
         return {
@@ -163,7 +173,8 @@ export default {
             handleFileSelect,
             handleFileDrop,
             handleSubmit,
-            formatFileSize
+            formatFileSize,
+            capitalizeStatus
         };
     }
 };
