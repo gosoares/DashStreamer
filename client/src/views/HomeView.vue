@@ -1,7 +1,7 @@
 <template>
     <main class="container">
         <div class="header">
-            <h1>Video Library</h1>
+            <h1>Videos</h1>
             <router-link to="/upload" class="btn btn-primary">
                 Upload Video
             </router-link>
@@ -16,9 +16,9 @@
                 <div class="video-info">
                     <h2 class="video-title">{{ video.title }}</h2>
                     <p class="video-date">
-                        {{ new Date(video.created).toLocaleDateString() }}
+                        {{ formatDate(video.created) }}
                     </p>
-                    <div class="status-container">
+                    <div class="status-container" v-if="video.status !== 'done'">
                         <span :class="{
                             'status-badge': true,
                             'status-done': video.status === 'done',
@@ -26,7 +26,7 @@
                             'status-processing': video.status === 'processing',
                             'status-error': video.status === 'error'
                         }">
-                            {{ video.status }}
+                            {{ capitalizeStatus(video.status) }}
                         </span>
                     </div>
                 </div>
@@ -47,6 +47,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import ApiService from '@/services/ApiService';
+import { capitalizeStatus, formatDate } from '@/utils/formatters';
 
 export default {
     name: 'HomeView',
@@ -76,7 +77,9 @@ export default {
         return {
             videos,
             getThumbnailUrl,
-            goToPlayer
+            goToPlayer,
+            capitalizeStatus,
+            formatDate
         };
     }
 };

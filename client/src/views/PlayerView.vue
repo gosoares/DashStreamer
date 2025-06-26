@@ -23,9 +23,9 @@
         <div v-if="videoInfo" class="video-details">
             <h2>{{ videoInfo.title }}</h2>
             <p class="video-date">
-                Uploaded on {{ new Date(videoInfo.created).toLocaleDateString() }}
+                Uploaded on {{ formatDate(videoInfo.created) }}
             </p>
-            <div class="status-container">
+            <div class="status-container" v-if="videoInfo.status !== 'done'">
                 <span :class="{
                     'status-badge': true,
                     'status-done': videoInfo.status === 'done',
@@ -33,7 +33,7 @@
                     'status-processing': videoInfo.status === 'processing',
                     'status-error': videoInfo.status === 'error'
                 }">
-                    {{ videoInfo.status }}
+                    {{ capitalizeStatus(videoInfo.status) }}
                 </span>
             </div>
         </div>
@@ -45,6 +45,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import * as dashjs from 'dashjs';
 import ApiService from '@/services/ApiService';
+import { capitalizeStatus, formatDate } from '@/utils/formatters';
 
 export default {
     name: 'PlayerView',
@@ -94,7 +95,9 @@ export default {
         return {
             videoPlayer,
             videoInfo,
-            errorMessage
+            errorMessage,
+            capitalizeStatus,
+            formatDate
         };
     }
 };
