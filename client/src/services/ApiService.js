@@ -40,11 +40,11 @@ export default {
 
     // Get video manifest URL
     getManifestUrl(videoId) {
-        return `${API_URL}/videos/${videoId}/manifest.mpd`;
+        return `${API_URL}/videos/${videoId}/video.mpd`;
     },
 
     // Get thumbnail URL
     getThumbnailUrl(videoId) {
-        return `${API_URL}/videos/${videoId}/thumbnail`;
+        return `${API_URL}/videos/${videoId}/thumbnail.jpg`;
     }
 };

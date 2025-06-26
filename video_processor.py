@@ -225,7 +225,7 @@ def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None
         dash = video.dash(Formats.h264())
         dash.representations(*representations)
 
-        output_file = str(output_dir / "manifest.mpd")
+        output_file = str(output_dir / "video.mpd")
         dash.output(output_file)
 
         if log_path:

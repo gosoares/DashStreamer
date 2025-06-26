@@ -2,7 +2,7 @@
   <header>
     <nav class="container">
       <router-link to="/" class="logo">
-        Video Platform
+        Dash Streamer
       </router-link>
     </nav>
   </header>

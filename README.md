@@ -72,7 +72,7 @@ DashStreamer is a full-stack web application for uploading, processing, and stre
 | GET    | `/videos/<video_id>/info`                     | Get metadata for a specific video.               |
 | GET    | `/videos/<video_id>/thumbnail`                | Get the thumbnail image for a video.             |
 | GET    | `/videos/<video_id>/log`                      | Get the processing log for a video.              |
-| GET    | `/videos/<video_id>/manifest.mpd`             | Get the MPEG-DASH manifest for a video.          |
+| GET    | `/videos/<video_id>/video.mpd`             | Get the MPEG-DASH manifest for a video.          |
 | GET    | `/videos/<video_id>/<segment/init file>`      | Get DASH segments or init files (m4s, mpd, etc.) |
 
 #### Example: Video Metadata (`meta.json`)
@@ -117,7 +117,7 @@ The video processing pipeline has been enhanced with robust aspect ratio support
 uploads/
   <video_id>/
     original.<ext>
-    manifest.mpd
+    video.mpd
     manifest_chunk_*.m4s
     manifest_init_*.m4s
     thumbnail.jpg
