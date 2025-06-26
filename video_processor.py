@@ -118,13 +118,13 @@ def generate_representations(
         audio_bitrate = 128 if height >= 720 else 96
 
         representations.append(
-            Representation(Size(width, height), Bitrate(video_bitrate, audio_bitrate))
+            Representation(Size(width, height), Bitrate(video_bitrate * 1000, audio_bitrate * 1000))
         )
 
     return representations
 
 
-def preprocess_video_if_needed(input_path: Path, temp_dir: Path = None) -> Path:
+def preprocess_video_if_needed(input_path: Path, temp_dir: Path = None, debug: bool = False) -> Path:
     """
     Preprocess video files that may have problematic metadata streams.
     Returns the path to a clean video file (either the original or a cleaned version).
@@ -160,7 +160,7 @@ def preprocess_video_if_needed(input_path: Path, temp_dir: Path = None) -> Path:
             and stream.get("codec_tag_string") == "mebx"
             for stream in streams_info["streams"]
         )
-
+        
         if not has_metadata_streams:
             return input_path
 
@@ -169,7 +169,11 @@ def preprocess_video_if_needed(input_path: Path, temp_dir: Path = None) -> Path:
             temp_dir = input_path.parent / "temp"
         temp_dir.mkdir(exist_ok=True)
 
-        clean_path = temp_dir / f"cleaned_{input_path.name}"
+        # For debug mode, save to the same directory as the original
+        if debug:
+            clean_path = input_path.parent / f"debug_preprocessed_{input_path.name}"
+        else:
+            clean_path = temp_dir / f"cleaned_{input_path.name}"
 
         # Copy only video and audio streams
         subprocess.run(
@@ -198,7 +202,7 @@ def preprocess_video_if_needed(input_path: Path, temp_dir: Path = None) -> Path:
         return input_path
 
 
-def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None):
+def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None, debug: bool = False):
     """
     Create DASH streaming files from input video.
     Automatically detects video aspect ratio and generates appropriate representations.
@@ -210,7 +214,7 @@ def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None
     """
     try:
         # Preprocess the video if needed to handle metadata streams
-        processed_input = preprocess_video_if_needed(input_path)
+        processed_input = preprocess_video_if_needed(input_path, debug=debug)
 
         # Get video properties
         video_props = get_video_properties(processed_input)
@@ -221,12 +225,34 @@ def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None
         )
 
         # Create DASH stream from the (possibly cleaned) input
+        if log_path:
+            with open(log_path, "a") as logf:
+                logf.write(f"\nStarting DASH conversion...\n")
+                logf.write(f"Input: {processed_input}\n")
+                logf.write(f"Video properties: {video_props}\n")
+        
         video = ffmpeg_streaming.input(str(processed_input))
         dash = video.dash(Formats.h264())
         dash.representations(*representations)
 
         output_file = str(output_dir / "video.mpd")
-        dash.output(output_file)
+        
+        if log_path:
+            with open(log_path, "a") as logf:
+                logf.write(f"DASH output file: {output_file}\n")
+                logf.write("Starting DASH processing...\n")
+        
+        # Add progress monitoring if possible
+        try:
+            dash.output(output_file)
+            if log_path:
+                with open(log_path, "a") as logf:
+                    logf.write("DASH conversion completed successfully\n")
+        except Exception as dash_error:
+            if log_path:
+                with open(log_path, "a") as logf:
+                    logf.write(f"DASH conversion failed: {dash_error}\n")
+            raise
 
         if log_path:
             with open(log_path, "a") as logf:
@@ -243,11 +269,16 @@ def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None
                 for f in sorted(output_dir.iterdir()):
                     logf.write(f"  {f.name}\n")
 
-        # Clean up temporary file if we created one
-        if processed_input != input_path:
+        # Clean up temporary files if we created them (but not debug files)
+        if processed_input != input_path and "debug_preprocessed" not in str(processed_input):
             try:
                 processed_input.unlink()
-                processed_input.parent.rmdir()  # Remove temp dir if empty
+                # Also clean up parent temp directory if it's empty
+                if processed_input.parent.name == "temp":
+                    try:
+                        processed_input.parent.rmdir()
+                    except OSError:
+                        pass  # Directory not empty
             except Exception:
                 pass  # Ignore cleanup errors
 
@@ -279,6 +310,137 @@ def extract_thumbnail(video_path: Path, output_path: Path, timestamp: str = "00:
         str(output_path),
     ]
     subprocess.run(thumb_cmd, check=True, capture_output=True, text=True)
+
+
+def create_manual_dash(input_path: Path, output_dir: Path, log_path: Path = None):
+    """
+    Create DASH files using direct ffmpeg commands for debugging.
+    This bypasses the ffmpeg-streaming library to test raw ffmpeg DASH generation.
+    
+    Args:
+        input_path: Path to input video file
+        output_dir: Directory to save DASH files
+        log_path: Optional path to log file
+    """
+    try:
+        # Preprocess the video if needed
+        processed_input = preprocess_video_if_needed(input_path, debug=True)
+        
+        # Get video properties
+        video_props = get_video_properties(processed_input)
+        
+        if log_path:
+            with open(log_path, "a") as logf:
+                logf.write(f"\nStarting manual DASH conversion...\n")
+                logf.write(f"Input: {processed_input}\n")
+                logf.write(f"Video properties: {video_props}\n")
+        
+        # Generate representations
+        representations = generate_representations(
+            video_props["width"], video_props["height"], video_props["aspect_ratio"]
+        )
+        
+        # Create DASH files using direct ffmpeg
+        output_file = str(output_dir / "manual_video.mpd")
+        
+        # Build ffmpeg command for DASH
+        cmd = [
+            "ffmpeg", "-y",
+            "-i", str(processed_input)
+        ]
+        
+        # Add video streams for each representation
+        for i, rep in enumerate(representations):
+            cmd.extend([
+                "-map", "0:v:0",
+                f"-c:v:{i}", "libx264",
+                f"-b:v:{i}", f"{rep.bitrate.video}k",
+                f"-s:v:{i}", f"{rep.size.width}x{rep.size.height}",
+                f"-profile:v:{i}", "high",
+                f"-level:v:{i}", "4.0"
+            ])
+        
+        # Add audio stream
+        cmd.extend([
+            "-map", "0:a:0",
+            "-c:a", "aac",
+            "-b:a", "128k"
+        ])
+        
+        # DASH-specific options
+        cmd.extend([
+            "-f", "dash",
+            "-seg_duration", "4",
+            "-use_template", "1",
+            "-use_timeline", "1",
+            "-init_seg_name", "init-$RepresentationID$.$ext$",
+            "-media_seg_name", "chunk-$RepresentationID$-$Number%05d$.$ext$",
+            output_file
+        ])
+        
+        if log_path:
+            with open(log_path, "a") as logf:
+                logf.write(f"Manual DASH command: {' '.join(cmd)}\n")
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        
+        if log_path:
+            with open(log_path, "a") as logf:
+                logf.write("Manual DASH conversion completed successfully\n")
+                if result.stderr:
+                    logf.write(f"FFmpeg stderr: {result.stderr}\n")
+                
+    except Exception as e:
+        if log_path:
+            with open(log_path, "a") as logf:
+                logf.write(f"\nError during manual DASH conversion: {e}\n")
+        raise
+
+
+def create_debug_mp4(input_path: Path, output_path: Path, log_path: Path = None):
+    """
+    Create a simple MP4 conversion for debugging purposes.
+    This uses the same preprocessing as DASH but outputs a regular MP4.
+    
+    Args:
+        input_path: Path to input video file
+        output_path: Path for output MP4 file
+        log_path: Optional path to log file
+    """
+    try:
+        # Preprocess the video if needed
+        processed_input = preprocess_video_if_needed(input_path, debug=True)
+        
+        # Get video properties
+        video_props = get_video_properties(processed_input)
+        
+        # Create a simple MP4 conversion with moderate quality
+        cmd = [
+            "ffmpeg",
+            "-y",
+            "-i", str(processed_input),
+            "-c:v", "libx264",
+            "-preset", "medium",
+            "-crf", "23",
+            "-c:a", "aac",
+            "-b:a", "128k",
+            str(output_path)
+        ]
+        
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
+        
+        if log_path:
+            with open(log_path, "a") as logf:
+                logf.write(f"\nDebug MP4 created from {input_path}:\n")
+                logf.write(f"Source: {video_props['width']}x{video_props['height']} (AR: {video_props['aspect_ratio']})\n")
+                logf.write(f"Output: {output_path}\n")
+                logf.write(f"Preprocessed input: {processed_input}\n")
+                
+    except Exception as e:
+        if log_path:
+            with open(log_path, "a") as logf:
+                logf.write(f"\nError during debug MP4 conversion: {e}\n")
+        raise
 
 
 def is_file_allowed(filename: str) -> bool:

@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -6,10 +7,13 @@ import subprocess
 import threading
 from flask import Flask, request, jsonify, send_from_directory, abort
 from flask_cors import CORS
-from video_processor import create_dash_stream, extract_thumbnail, is_file_allowed
+from video_processor import create_dash_stream, extract_thumbnail, is_file_allowed, create_debug_mp4, create_manual_dash
 
 UPLOADS_DIR = Path("uploads")
 UPLOADS_DIR.mkdir(exist_ok=True)
+
+# Debug mode for video processing (saves intermediate files)
+DEBUG_VIDEO_PROCESSING = os.getenv("DEBUG_VIDEO_PROCESSING", "false").lower() == "true"
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -54,7 +58,12 @@ def upload_video():
             thumb_path = video_dir / "thumbnail.jpg"
             extract_thumbnail(original_path, thumb_path)
 
-            create_dash_stream(original_path, video_dir, log_path=log_path)
+            # Create debug MP4 if in debug mode
+            if DEBUG_VIDEO_PROCESSING:
+                debug_mp4_path = video_dir / "debug_converted.mp4"
+                create_debug_mp4(original_path, debug_mp4_path, log_path=log_path)
+
+            create_dash_stream(original_path, video_dir, log_path=log_path, debug=DEBUG_VIDEO_PROCESSING)
             meta["status"] = "done"
             meta["log"] = str(log_path.name)
             meta["thumbnail"] = "thumbnail.jpg"

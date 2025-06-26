@@ -51,7 +51,7 @@ export default {
     name: 'PlayerView',
     setup() {
         const route = useRoute();
-        const videoPlayer = document.querySelector("#videoPlayer") || ref(null);
+        const videoPlayer = ref(null);
         const videoInfo = ref(null);
         const errorMessage = ref('');
         let player = null;
@@ -123,6 +123,18 @@ export default {
 .video-player-container {
     max-width: 1024px;
     margin: 0 auto 2rem;
+}
+
+.video-player {
+    width: 100%;
+    max-width: 100%;
+}
+
+.video-player video {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    display: block;
 }
 
 .video-details {
