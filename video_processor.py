@@ -8,13 +8,13 @@ import ffmpeg_streaming
 
 def get_video_properties(video_path: Path):
     """
-    Get video properties including width, height, and aspect ratio.
+    Get video properties including width, height, aspect ratio, and rotation.
 
     Args:
         video_path: Path to the video file
 
     Returns:
-        dict: Video properties including width, height, aspect_ratio
+        dict: Video properties including width, height, aspect_ratio, rotation
     """
     cmd = [
         "ffprobe",
@@ -38,15 +38,36 @@ def get_video_properties(video_path: Path):
         stream = data["streams"][0]
         width = int(stream["width"])
         height = int(stream["height"])
+        
+        # Check for rotation metadata
+        rotation = 0
+        if "side_data_list" in stream:
+            for side_data in stream["side_data_list"]:
+                if side_data.get("side_data_type") == "Display Matrix":
+                    rotation = side_data.get("rotation", 0)
+                    break
+        
+        # Apply rotation to dimensions for display aspect ratio
+        if abs(rotation) == 90 or abs(rotation) == 270:
+            # Portrait orientation - swap dimensions for aspect ratio calculation
+            display_width = height
+            display_height = width
+        else:
+            # Landscape orientation - use original dimensions
+            display_width = width
+            display_height = height
 
-        # Calculate aspect ratio as a simplified fraction
-        aspect_ratio = Fraction(width, height)
+        # Calculate aspect ratio based on display orientation
+        aspect_ratio = Fraction(display_width, display_height)
 
         return {
             "width": width,
             "height": height,
+            "display_width": display_width,
+            "display_height": display_height,
             "aspect_ratio": aspect_ratio,
             "aspect_ratio_decimal": float(aspect_ratio),
+            "rotation": rotation,
         }
 
     except subprocess.CalledProcessError as e:
@@ -56,15 +77,15 @@ def get_video_properties(video_path: Path):
 
 
 def generate_representations(
-    source_width: int, source_height: int, aspect_ratio: Fraction
+    display_width: int, display_height: int, aspect_ratio: Fraction
 ):
     """
-    Generate video representations that maintain the source aspect ratio.
+    Generate video representations that maintain the display aspect ratio.
 
     Args:
-        source_width: Original video width
-        source_height: Original video height
-        aspect_ratio: Source aspect ratio as Fraction
+        display_width: Display video width (after rotation)  
+        display_height: Display video height (after rotation)
+        aspect_ratio: Display aspect ratio as Fraction
 
     Returns:
         list: List of Representation objects
@@ -73,19 +94,39 @@ def generate_representations(
     # We'll calculate width to maintain exact aspect ratio
     target_heights = []
 
-    # Only include heights that are smaller than or equal to source
-    if source_height >= 1080:
-        target_heights.append(1080)
-    if source_height >= 720:
-        target_heights.append(720)
-    if source_height >= 540:
-        target_heights.append(540)
-    if source_height >= 360:
-        target_heights.append(360)
+    # For portrait videos, use target widths instead of heights
+    if aspect_ratio < 1:  # Portrait
+        # Define target widths for portrait videos
+        target_widths = []
+        if display_width >= 1080:
+            target_widths.append(1080)
+        if display_width >= 720:
+            target_widths.append(720)
+        if display_width >= 540:
+            target_widths.append(540)
+        if display_width >= 360:
+            target_widths.append(360)
+        
+        if not target_widths:
+            target_widths.append(display_width)
+            
+        # Convert target widths to target heights for portrait
+        for target_width in target_widths:
+            target_height = int(target_width / aspect_ratio)
+            target_heights.append(target_height)
+    else:  # Landscape
+        # Use traditional height-based approach for landscape
+        if display_height >= 1080:
+            target_heights.append(1080)
+        if display_height >= 720:
+            target_heights.append(720)
+        if display_height >= 540:
+            target_heights.append(540)
+        if display_height >= 360:
+            target_heights.append(360)
 
-    # If source is smaller than 360p, just use the source resolution
-    if not target_heights:
-        target_heights.append(source_height)
+        if not target_heights:
+            target_heights.append(display_height)
 
     representations = []
 
@@ -97,21 +138,16 @@ def generate_representations(
         360: 400,
     }
 
-    for height in target_heights:
+    for target_height in target_heights:
         # Calculate width maintaining exact aspect ratio
-        width = int(height * aspect_ratio)
+        width = int(target_height * aspect_ratio)
+        height = target_height
 
-        # Ensure width is even (required for many codecs)
+        # Ensure both dimensions are even (required for many codecs)
         if width % 2 != 0:
             width += 1
-
-        # Recalculate height if width was adjusted to ensure exact aspect ratio
-        height = int(width / aspect_ratio)
         if height % 2 != 0:
             height += 1
-            width = int(height * aspect_ratio)
-            if width % 2 != 0:
-                width += 1
 
         # Get appropriate bitrate, or calculate based on resolution
         video_bitrate = bitrate_map.get(height, max(200, int(width * height * 0.001)))
@@ -175,7 +211,7 @@ def preprocess_video_if_needed(input_path: Path, temp_dir: Path = None, debug: b
         else:
             clean_path = temp_dir / f"cleaned_{input_path.name}"
 
-        # Copy only video and audio streams
+        # Copy only video and audio streams while preserving metadata
         subprocess.run(
             [
                 "ffmpeg",
@@ -188,6 +224,10 @@ def preprocess_video_if_needed(input_path: Path, temp_dir: Path = None, debug: b
                 "0:a:0",
                 "-c",
                 "copy",  # Copy streams without re-encoding for speed
+                "-map_metadata",
+                "0",  # Preserve metadata
+                "-movflags",
+                "use_metadata_tags",  # Preserve mov/mp4 metadata
                 str(clean_path),
             ],
             check=True,
@@ -219,9 +259,9 @@ def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None
         # Get video properties
         video_props = get_video_properties(processed_input)
 
-        # Generate representations that maintain the source aspect ratio
+        # Generate representations that maintain the display aspect ratio
         representations = generate_representations(
-            video_props["width"], video_props["height"], video_props["aspect_ratio"]
+            video_props["display_width"], video_props["display_height"], video_props["aspect_ratio"]
         )
 
         # Create DASH stream from the (possibly cleaned) input
@@ -230,10 +270,22 @@ def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None
                 logf.write(f"\nStarting DASH conversion...\n")
                 logf.write(f"Input: {processed_input}\n")
                 logf.write(f"Video properties: {video_props}\n")
+                logf.write(f"Generated {len(representations)} representations\n")
         
         video = ffmpeg_streaming.input(str(processed_input))
         dash = video.dash(Formats.h264())
-        dash.representations(*representations)
+        
+        # For portrait videos, we might need to handle aspect ratios more carefully
+        # Let's try adding some tolerance or using fewer representations initially
+        if video_props.get('rotation', 0) != 0:
+            # For rotated videos, let's use fewer representations to avoid conflicts
+            limited_reps = representations[:2]  # Use only top 2 quality levels
+            if log_path:
+                with open(log_path, "a") as logf:
+                    logf.write(f"Using limited representations ({len(limited_reps)}) for rotated video\n")
+            dash.representations(*limited_reps)
+        else:
+            dash.representations(*representations)
 
         output_file = str(output_dir / "video.mpd")
         
@@ -244,6 +296,17 @@ def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None
         
         # Add progress monitoring if possible
         try:
+            if log_path:
+                with open(log_path, "a") as logf:
+                    logf.write("About to start DASH output generation...\n")
+                    if video_props.get('rotation', 0) != 0:
+                        active_reps = limited_reps
+                    else:
+                        active_reps = representations
+                    
+                    for i, rep in enumerate(active_reps):
+                        logf.write(f"  Rep {i}: {rep.size.width}x{rep.size.height} (AR: {rep.size.width/rep.size.height:.4f})\n")
+            
             dash.output(output_file)
             if log_path:
                 with open(log_path, "a") as logf:
@@ -252,14 +315,20 @@ def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None
             if log_path:
                 with open(log_path, "a") as logf:
                     logf.write(f"DASH conversion failed: {dash_error}\n")
+                    logf.write(f"Error type: {type(dash_error)}\n")
             raise
 
         if log_path:
             with open(log_path, "a") as logf:
                 logf.write(f"\nDASH files generated from {input_path}:\n")
                 logf.write(
-                    f"Source: {video_props['width']}x{video_props['height']} (AR: {video_props['aspect_ratio']})\n"
+                    f"Physical: {video_props['width']}x{video_props['height']}\n"
                 )
+                logf.write(
+                    f"Display: {video_props['display_width']}x{video_props['display_height']} (AR: {video_props['aspect_ratio']})\n"
+                )
+                if video_props['rotation'] != 0:
+                    logf.write(f"Rotation: {video_props['rotation']}°\n")
                 logf.write("Representations:\n")
                 for rep in representations:
                     logf.write(

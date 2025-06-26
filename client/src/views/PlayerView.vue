@@ -128,13 +128,18 @@ export default {
 .video-player {
     width: 100%;
     max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .video-player video {
     width: 100%;
     height: auto;
     max-width: 100%;
+    max-height: 70vh; /* Limit height to 70% of viewport height */
     display: block;
+    object-fit: contain; /* Maintain aspect ratio */
 }
 
 .video-details {
@@ -159,5 +164,23 @@ export default {
 
 .status-container {
     margin-top: 1rem;
+}
+
+/* Responsive adjustments for mobile devices */
+@media (max-width: 768px) {
+    .video-player video {
+        max-height: 60vh; /* Smaller max height on mobile */
+    }
+    
+    .video-player-container {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Specific adjustments for portrait videos on mobile */
+@media (max-width: 768px) and (orientation: portrait) {
+    .video-player video {
+        max-height: 50vh; /* Even smaller on mobile portrait */
+    }
 }
 </style>
