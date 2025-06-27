@@ -11,6 +11,11 @@
     
     <div class="panel-content" v-show="!isCollapsed">
       <div class="cards-grid">
+        <SegmentDownloadPanel 
+          :segment-downloads="networkStats.segmentDownloads"
+          @clear-history="clearSegmentHistory"
+        />
+        
         <TechnicalInfo 
           :current-resolution="videoInfo.currentResolution"
           :video-codec="videoInfo.videoCodec"
@@ -62,12 +67,14 @@
 <script>
 import TechnicalInfo from './TechnicalInfo.vue';
 import BufferStats from './BufferStats.vue';
+import SegmentDownloadPanel from './SegmentDownloadPanel.vue';
 
 export default {
   name: 'VideoInfoPanel',
   components: {
     TechnicalInfo,
-    BufferStats
+    BufferStats,
+    SegmentDownloadPanel
   },
   props: {
     videoInfo: {
@@ -138,6 +145,9 @@ export default {
       if (changes > 20) return 'metric-warning';       // Too many changes
       if (changes > 10) return 'metric-fair';
       return 'metric-good';
+    },
+    clearSegmentHistory() {
+      this.$emit('clear-segment-history');
     }
   }
 };

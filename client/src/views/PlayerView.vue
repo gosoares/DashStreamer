@@ -43,6 +43,7 @@
                 :network-stats="dashboardData.networkStats"
                 :buffer-stats="dashboardData.bufferStats"
                 :performance-stats="dashboardData.performanceStats"
+                @clear-segment-history="clearSegmentHistory"
             />
         </div>
     </main>
@@ -84,7 +85,8 @@ export default {
                 currentQualityId: ''
             },
             networkStats: {
-                totalDownloaded: 0
+                totalDownloaded: 0,
+                segmentDownloads: []
             },
             bufferData: [],
             bufferStats: {
@@ -103,6 +105,51 @@ export default {
         });
 
         let updateCounter = 0;
+        
+        // Segment download tracking
+        const segmentTracker = new Map();
+        
+        // Utility functions for segment tracking
+        const getSegmentId = (request) => {
+            return request.url || request.requestId || `${request.mediaType}-${Date.now()}`;
+        };
+        
+        const formatBytes = (bytes) => {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        };
+        
+        const formatSpeed = (bytesPerSecond) => {
+            if (bytesPerSecond === 0) return '0 B/s';
+            const k = 1024;
+            const sizes = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+            const i = Math.floor(Math.log(bytesPerSecond) / Math.log(k));
+            return parseFloat((bytesPerSecond / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        };
+        
+        const getSegmentName = (url) => {
+            if (!url) return 'Unknown';
+            const parts = url.split('/');
+            return parts[parts.length - 1] || 'segment';
+        };
+        
+        const formatTimeRange = (seconds) => {
+            if (seconds < 0 || isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        };
+        
+        const addSegmentToHistory = (segmentData) => {
+            dashboardData.networkStats.segmentDownloads.unshift(segmentData);
+        };
+        
+        const clearSegmentHistory = () => {
+            dashboardData.networkStats.segmentDownloads = [];
+        };
         
         const updateDashboardData = () => {
             updateCounter++;
@@ -441,15 +488,124 @@ export default {
                 dashboardData.bufferStats.stallCount++;
             });
 
-            // Fragment loading events
+            // Fragment loading started event
+            player.on(dashjs.MediaPlayer.events.FRAGMENT_LOADING_STARTED, (e) => {
+                if (e && e.request) {
+                    const segmentId = getSegmentId(e.request);
+                    segmentTracker.set(segmentId, {
+                        id: segmentId,
+                        url: e.request.url,
+                        mediaType: e.request.mediaType || 'unknown',
+                        startTime: performance.now(),
+                        segmentName: getSegmentName(e.request.url)
+                    });
+                }
+            });
+
+            // Fragment loading completed event (enhanced)
             player.on(dashjs.MediaPlayer.events.FRAGMENT_LOADING_COMPLETED, (e) => {
                 console.log('Fragment loaded:', e);
                 if (e && e.request) {
+                    const segmentId = getSegmentId(e.request);
+                    const startData = segmentTracker.get(segmentId);
+                    const endTime = performance.now();
                     const bytesLoaded = e.request.bytesLoaded || e.request.responseLength || e.request.byteLength;
+                    
                     if (bytesLoaded) {
                         dashboardData.networkStats.totalDownloaded += bytesLoaded;
                         console.log('Total downloaded updated:', dashboardData.networkStats.totalDownloaded);
                     }
+                    
+                    // Create segment download record
+                    if (startData && bytesLoaded) {
+                        const downloadTime = (endTime - startData.startTime) / 1000; // Convert to seconds
+                        const downloadSpeed = downloadTime > 0 ? bytesLoaded / downloadTime : 0;
+                        
+                        // Get quality information from current dashboard data
+                        let resolution = 'N/A';
+                        let bitrate = 'N/A';
+                        let timeRange = 'N/A';
+                        
+                        if (startData.mediaType === 'video') {
+                            // Use the same data that's shown in Technical Information card
+                            if (dashboardData.videoInfo.currentResolution && dashboardData.videoInfo.currentResolution !== 'N/A') {
+                                resolution = dashboardData.videoInfo.currentResolution;
+                            }
+                            
+                            if (dashboardData.videoInfo.currentBitrate && dashboardData.videoInfo.currentBitrate > 0) {
+                                // Convert bitrate from bps to kbps for display
+                                bitrate = `${Math.round(dashboardData.videoInfo.currentBitrate / 1000)}k`;
+                            }
+                        }
+                        
+                        // Get segment start time from request data
+                        try {
+                            if (e.request && e.request.startTime !== undefined) {
+                                timeRange = formatTimeRange(e.request.startTime);
+                            } else if (e.request && e.request.index !== undefined) {
+                                // Estimate based on segment index and typical segment duration (2 seconds)
+                                const segmentDuration = 2; // Default segment duration
+                                const startTime = e.request.index * segmentDuration;
+                                timeRange = formatTimeRange(startTime);
+                            }
+                        } catch (error) {
+                            console.warn('Error calculating start time for segment:', error);
+                        }
+                        
+                        const segmentData = {
+                            id: segmentId,
+                            segmentName: startData.segmentName,
+                            url: startData.url,
+                            mediaType: startData.mediaType,
+                            size: bytesLoaded,
+                            sizeFormatted: formatBytes(bytesLoaded),
+                            downloadTime: downloadTime,
+                            downloadSpeed: downloadSpeed,
+                            downloadSpeedFormatted: formatSpeed(downloadSpeed),
+                            timestamp: new Date().toLocaleTimeString(),
+                            quality: e.request.quality || 'N/A',
+                            index: e.request.index || 0,
+                            resolution: resolution,
+                            bitrate: bitrate,
+                            timeRange: timeRange
+                        };
+                        
+                        addSegmentToHistory(segmentData);
+                    }
+                    
+                    // Clean up tracker
+                    segmentTracker.delete(segmentId);
+                }
+            });
+
+            // Fragment loading abandoned event
+            player.on(dashjs.MediaPlayer.events.FRAGMENT_LOADING_ABANDONED, (e) => {
+                if (e && e.request) {
+                    const segmentId = getSegmentId(e.request);
+                    const startData = segmentTracker.get(segmentId);
+                    
+                    if (startData) {
+                        const segmentData = {
+                            id: segmentId,
+                            segmentName: startData.segmentName,
+                            url: startData.url,
+                            mediaType: startData.mediaType,
+                            size: 0,
+                            sizeFormatted: 'Failed',
+                            downloadTime: 0,
+                            downloadSpeed: 0,
+                            downloadSpeedFormatted: 'Failed',
+                            timestamp: new Date().toLocaleTimeString(),
+                            quality: 'Failed',
+                            index: e.request.index || 0,
+                            failed: true
+                        };
+                        
+                        addSegmentToHistory(segmentData);
+                    }
+                    
+                    // Clean up tracker
+                    segmentTracker.delete(segmentId);
                 }
             });
 
@@ -592,7 +748,8 @@ export default {
             errorMessage,
             dashboardData,
             capitalizeStatus,
-            formatDate
+            formatDate,
+            clearSegmentHistory
         };
     }
 };
