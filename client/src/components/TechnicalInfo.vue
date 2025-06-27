@@ -27,10 +27,6 @@
         <span>{{ aspectRatio }}</span>
       </div>
       <div class="info-item">
-        <label>Container</label>
-        <span>{{ containerType }}</span>
-      </div>
-      <div class="info-item">
         <label>Duration</label>
         <span>{{ formatDuration(duration) }}</span>
       </div>

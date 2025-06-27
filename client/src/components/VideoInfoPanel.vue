@@ -24,15 +24,13 @@
           :current-quality-id="videoInfo.currentQualityId"
         />
         
-        <NetworkChart 
-          :network-data="networkData"
+        <NetworkStats 
           :current-speed="networkStats.currentSpeed"
           :average-speed="networkStats.averageSpeed"
           :total-downloaded="networkStats.totalDownloaded"
         />
         
-        <BufferChart 
-          :buffer-data="bufferData"
+        <BufferStats 
           :video-buffer-level="bufferStats.videoBufferLevel"
           :audio-buffer-level="bufferStats.audioBufferLevel"
           :stall-count="bufferStats.stallCount"
@@ -44,7 +42,7 @@
             <div class="metrics-grid">
               <div class="metric-item">
                 <label>Dropped Frames</label>
-                <span>{{ performanceStats.droppedFrames }}</span>
+                <span :class="getDropRateClass(performanceStats.dropRate)">{{ performanceStats.droppedFrames }}</span>
               </div>
               <div class="metric-item">
                 <label>Total Frames</label>
@@ -52,19 +50,11 @@
               </div>
               <div class="metric-item">
                 <label>Drop Rate</label>
-                <span>{{ formatPercentage(performanceStats.dropRate) }}</span>
-              </div>
-              <div class="metric-item">
-                <label>Startup Time</label>
-                <span>{{ formatTime(performanceStats.startupTime) }}</span>
-              </div>
-              <div class="metric-item">
-                <label>Stall Duration</label>
-                <span>{{ formatTime(performanceStats.totalStallTime) }}</span>
+                <span :class="getDropRateClass(performanceStats.dropRate)">{{ formatPercentage(performanceStats.dropRate) }}</span>
               </div>
               <div class="metric-item">
                 <label>Quality Changes</label>
-                <span>{{ performanceStats.qualityChanges }}</span>
+                <span :class="getQualityChangesClass(performanceStats.qualityChanges)">{{ performanceStats.qualityChanges }}</span>
               </div>
             </div>
           </div>
@@ -76,15 +66,15 @@
 
 <script>
 import TechnicalInfo from './TechnicalInfo.vue';
-import NetworkChart from './NetworkChart.vue';
-import BufferChart from './BufferChart.vue';
+import NetworkStats from './NetworkStats.vue';
+import BufferStats from './BufferStats.vue';
 
 export default {
   name: 'VideoInfoPanel',
   components: {
     TechnicalInfo,
-    NetworkChart,
-    BufferChart
+    NetworkStats,
+    BufferStats
   },
   props: {
     videoInfo: {
@@ -102,10 +92,6 @@ export default {
         currentQualityId: ''
       })
     },
-    networkData: {
-      type: Array,
-      default: () => []
-    },
     networkStats: {
       type: Object,
       default: () => ({
@@ -113,10 +99,6 @@ export default {
         averageSpeed: 0,
         totalDownloaded: 0
       })
-    },
-    bufferData: {
-      type: Array,
-      default: () => []
     },
     bufferStats: {
       type: Object,
@@ -155,6 +137,16 @@ export default {
       if (!seconds || seconds < 0) return '0s';
       if (seconds < 1) return `${(seconds * 1000).toFixed(0)}ms`;
       return `${seconds.toFixed(2)}s`;
+    },
+    getDropRateClass(dropRate) {
+      if (dropRate > 0.05) return 'metric-critical'; // >5%
+      if (dropRate > 0.01) return 'metric-warning';  // >1%
+      return 'metric-good';
+    },
+    getQualityChangesClass(changes) {
+      if (changes > 20) return 'metric-warning';       // Too many changes
+      if (changes > 10) return 'metric-fair';
+      return 'metric-good';
     }
   }
 };
@@ -258,6 +250,22 @@ export default {
   font-size: 0.9rem;
   color: #2c3e50;
   font-weight: 600;
+}
+
+.metric-good {
+  color: #28a745;
+}
+
+.metric-fair {
+  color: #17a2b8;
+}
+
+.metric-warning {
+  color: #ffc107;
+}
+
+.metric-critical {
+  color: #dc3545;
 }
 
 @media (max-width: 768px) {

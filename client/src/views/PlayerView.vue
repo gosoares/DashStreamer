@@ -40,9 +40,7 @@
         <div v-if="videoInfo && videoInfo.status === 'done'" class="dashboard-container">
             <VideoInfoPanel 
                 :video-info="dashboardData.videoInfo"
-                :network-data="dashboardData.networkData"
                 :network-stats="dashboardData.networkStats"
-                :buffer-data="dashboardData.bufferData"
                 :buffer-stats="dashboardData.bufferStats"
                 :performance-stats="dashboardData.performanceStats"
             />
