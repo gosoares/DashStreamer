@@ -38,7 +38,7 @@ def get_video_properties(video_path: Path):
         stream = data["streams"][0]
         width = int(stream["width"])
         height = int(stream["height"])
-        
+
         # Check for rotation metadata
         rotation = 0
         if "side_data_list" in stream:
@@ -46,7 +46,7 @@ def get_video_properties(video_path: Path):
                 if side_data.get("side_data_type") == "Display Matrix":
                     rotation = side_data.get("rotation", 0)
                     break
-        
+
         # Apply rotation to dimensions for display aspect ratio
         if abs(rotation) == 90 or abs(rotation) == 270:
             # Portrait orientation - swap dimensions for aspect ratio calculation
@@ -83,7 +83,7 @@ def generate_representations(
     Generate video representations that maintain the display aspect ratio.
 
     Args:
-        display_width: Display video width (after rotation)  
+        display_width: Display video width (after rotation)
         display_height: Display video height (after rotation)
         aspect_ratio: Display aspect ratio as Fraction
 
@@ -106,10 +106,10 @@ def generate_representations(
             target_widths.append(540)
         if display_width >= 360:
             target_widths.append(360)
-        
+
         if not target_widths:
             target_widths.append(display_width)
-            
+
         # Convert target widths to target heights for portrait
         for target_width in target_widths:
             target_height = int(target_width / aspect_ratio)
@@ -154,13 +154,17 @@ def generate_representations(
         audio_bitrate = 128 if height >= 720 else 96
 
         representations.append(
-            Representation(Size(width, height), Bitrate(video_bitrate * 1000, audio_bitrate * 1000))
+            Representation(
+                Size(width, height), Bitrate(video_bitrate * 1000, audio_bitrate * 1000)
+            )
         )
 
     return representations
 
 
-def preprocess_video_if_needed(input_path: Path, temp_dir: Path = None, debug: bool = False) -> Path:
+def preprocess_video_if_needed(
+    input_path: Path, temp_dir: Path = None, debug: bool = False
+) -> Path:
     """
     Preprocess video files that may have problematic metadata streams.
     Returns the path to a clean video file (either the original or a cleaned version).
@@ -196,7 +200,7 @@ def preprocess_video_if_needed(input_path: Path, temp_dir: Path = None, debug: b
             and stream.get("codec_tag_string") == "mebx"
             for stream in streams_info["streams"]
         )
-        
+
         if not has_metadata_streams:
             return input_path
 
@@ -242,7 +246,9 @@ def preprocess_video_if_needed(input_path: Path, temp_dir: Path = None, debug: b
         return input_path
 
 
-def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None, debug: bool = False):
+def create_dash_stream(
+    input_path: Path, output_dir: Path, log_path: Path = None, debug: bool = False
+):
     """
     Create DASH streaming files from input video.
     Automatically detects video aspect ratio and generates appropriate representations.
@@ -261,52 +267,64 @@ def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None
 
         # Generate representations that maintain the display aspect ratio
         representations = generate_representations(
-            video_props["display_width"], video_props["display_height"], video_props["aspect_ratio"]
+            video_props["display_width"],
+            video_props["display_height"],
+            video_props["aspect_ratio"],
         )
 
         # Create DASH stream from the (possibly cleaned) input
         if log_path:
             with open(log_path, "a") as logf:
-                logf.write(f"\nStarting DASH conversion...\n")
+                logf.write("\nStarting DASH conversion...\n")
                 logf.write(f"Input: {processed_input}\n")
                 logf.write(f"Video properties: {video_props}\n")
                 logf.write(f"Generated {len(representations)} representations\n")
-        
+
         video = ffmpeg_streaming.input(str(processed_input))
-        dash = video.dash(Formats.h264())
-        
+        dash = video.dash(
+            Formats.h264(),
+            seg_duration=2,
+            use_template=1,
+            use_timeline=0,
+            force_key_frames="expr:gte(t,n_forced*1)",
+        )
+
         # For portrait videos, we might need to handle aspect ratios more carefully
         # Let's try adding some tolerance or using fewer representations initially
-        if video_props.get('rotation', 0) != 0:
+        if video_props.get("rotation", 0) != 0:
             # For rotated videos, let's use fewer representations to avoid conflicts
             limited_reps = representations[:2]  # Use only top 2 quality levels
             if log_path:
                 with open(log_path, "a") as logf:
-                    logf.write(f"Using limited representations ({len(limited_reps)}) for rotated video\n")
+                    logf.write(
+                        f"Using limited representations ({len(limited_reps)}) for rotated video\n"
+                    )
             dash.representations(*limited_reps)
         else:
             dash.representations(*representations)
 
         output_file = str(output_dir / "video.mpd")
-        
+
         if log_path:
             with open(log_path, "a") as logf:
                 logf.write(f"DASH output file: {output_file}\n")
                 logf.write("Starting DASH processing...\n")
-        
+
         # Add progress monitoring if possible
         try:
             if log_path:
                 with open(log_path, "a") as logf:
                     logf.write("About to start DASH output generation...\n")
-                    if video_props.get('rotation', 0) != 0:
+                    if video_props.get("rotation", 0) != 0:
                         active_reps = limited_reps
                     else:
                         active_reps = representations
-                    
+
                     for i, rep in enumerate(active_reps):
-                        logf.write(f"  Rep {i}: {rep.size.width}x{rep.size.height} (AR: {rep.size.width/rep.size.height:.4f})\n")
-            
+                        logf.write(
+                            f"  Rep {i}: {rep.size.width}x{rep.size.height} (AR: {rep.size.width / rep.size.height:.4f})\n"
+                        )
+
             dash.output(output_file)
             if log_path:
                 with open(log_path, "a") as logf:
@@ -327,7 +345,7 @@ def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None
                 logf.write(
                     f"Display: {video_props['display_width']}x{video_props['display_height']} (AR: {video_props['aspect_ratio']})\n"
                 )
-                if video_props['rotation'] != 0:
+                if video_props["rotation"] != 0:
                     logf.write(f"Rotation: {video_props['rotation']}°\n")
                 logf.write("Representations:\n")
                 for rep in representations:
@@ -339,7 +357,9 @@ def create_dash_stream(input_path: Path, output_dir: Path, log_path: Path = None
                     logf.write(f"  {f.name}\n")
 
         # Clean up temporary files if we created them (but not debug files)
-        if processed_input != input_path and "debug_preprocessed" not in str(processed_input):
+        if processed_input != input_path and "debug_preprocessed" not in str(
+            processed_input
+        ):
             try:
                 processed_input.unlink()
                 # Also clean up parent temp directory if it's empty
@@ -381,12 +401,11 @@ def extract_thumbnail(video_path: Path, output_path: Path, timestamp: str = "00:
     subprocess.run(thumb_cmd, check=True, capture_output=True, text=True)
 
 
-
 def create_debug_mp4(input_path: Path, output_path: Path, log_path: Path = None):
     """
     Create a simple MP4 conversion for debugging purposes.
     This uses the same preprocessing as DASH but outputs a regular MP4.
-    
+
     Args:
         input_path: Path to input video file
         output_path: Path for output MP4 file
@@ -395,32 +414,40 @@ def create_debug_mp4(input_path: Path, output_path: Path, log_path: Path = None)
     try:
         # Preprocess the video if needed
         processed_input = preprocess_video_if_needed(input_path, debug=True)
-        
+
         # Get video properties
         video_props = get_video_properties(processed_input)
-        
+
         # Create a simple MP4 conversion with moderate quality
         cmd = [
             "ffmpeg",
             "-y",
-            "-i", str(processed_input),
-            "-c:v", "libx264",
-            "-preset", "medium",
-            "-crf", "23",
-            "-c:a", "aac",
-            "-b:a", "128k",
-            str(output_path)
+            "-i",
+            str(processed_input),
+            "-c:v",
+            "libx264",
+            "-preset",
+            "medium",
+            "-crf",
+            "23",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "128k",
+            str(output_path),
         ]
-        
+
         subprocess.run(cmd, check=True, capture_output=True, text=True)
-        
+
         if log_path:
             with open(log_path, "a") as logf:
                 logf.write(f"\nDebug MP4 created from {input_path}:\n")
-                logf.write(f"Source: {video_props['width']}x{video_props['height']} (AR: {video_props['aspect_ratio']})\n")
+                logf.write(
+                    f"Source: {video_props['width']}x{video_props['height']} (AR: {video_props['aspect_ratio']})\n"
+                )
                 logf.write(f"Output: {output_path}\n")
                 logf.write(f"Preprocessed input: {processed_input}\n")
-                
+
     except Exception as e:
         if log_path:
             with open(log_path, "a") as logf:
