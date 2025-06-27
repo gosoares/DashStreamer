@@ -287,6 +287,8 @@ def create_dash_stream(
             use_template=1,
             use_timeline=0,
             force_key_frames="expr:gte(t,n_forced*1)",
+            init_seg_name="init_$RepresentationID$.m4s",
+            media_seg_name="chunk_$RepresentationID$_$Number%03d$.m4s",
         )
 
         # For portrait videos, we might need to handle aspect ratios more carefully
