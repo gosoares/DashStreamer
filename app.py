@@ -7,7 +7,7 @@ import subprocess
 import threading
 from flask import Flask, request, jsonify, send_from_directory, abort
 from flask_cors import CORS
-from video_processor import create_dash_stream, extract_thumbnail, is_file_allowed, create_debug_mp4, create_manual_dash
+from video_processor import create_dash_stream, extract_thumbnail, is_file_allowed, create_debug_mp4
 
 UPLOADS_DIR = Path("uploads")
 UPLOADS_DIR.mkdir(exist_ok=True)
