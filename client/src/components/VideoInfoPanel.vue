@@ -22,11 +22,6 @@
           :duration="videoInfo.duration"
           :available-qualities="videoInfo.availableQualities"
           :current-quality-id="videoInfo.currentQualityId"
-        />
-        
-        <NetworkStats 
-          :current-speed="networkStats.currentSpeed"
-          :average-speed="networkStats.averageSpeed"
           :total-downloaded="networkStats.totalDownloaded"
         />
         
@@ -66,14 +61,12 @@
 
 <script>
 import TechnicalInfo from './TechnicalInfo.vue';
-import NetworkStats from './NetworkStats.vue';
 import BufferStats from './BufferStats.vue';
 
 export default {
   name: 'VideoInfoPanel',
   components: {
     TechnicalInfo,
-    NetworkStats,
     BufferStats
   },
   props: {
@@ -95,8 +88,6 @@ export default {
     networkStats: {
       type: Object,
       default: () => ({
-        currentSpeed: 0,
-        averageSpeed: 0,
         totalDownloaded: 0
       })
     },

@@ -83,10 +83,7 @@ export default {
                 availableQualities: [],
                 currentQualityId: ''
             },
-            networkData: [],
             networkStats: {
-                currentSpeed: 0,
-                averageSpeed: 0,
                 totalDownloaded: 0
             },
             bufferData: [],
@@ -105,7 +102,11 @@ export default {
             }
         });
 
+        let updateCounter = 0;
+        
         const updateDashboardData = () => {
+            updateCounter++;
+            console.log(`=== Update #${updateCounter} at ${new Date().toLocaleTimeString()} ===`);
             if (!player) return;
 
             try {
@@ -395,55 +396,10 @@ export default {
                     console.warn('Buffer monitoring failed:', bufferError);
                 }
 
-                // Update network stats - simplified approach
+                // Update total downloaded
                 try {
-                    // Try to get throughput from player with multiple method names
-                    let currentThroughput = 0;
-                    
-                    try {
-                        if (typeof player.getAverageThroughput === 'function') {
-                            currentThroughput = player.getAverageThroughput('video') || 0;
-                        } else if (typeof player.getThroughput === 'function') {
-                            currentThroughput = player.getThroughput('video') || 0;
-                        }
-                        
-                        if (currentThroughput > 0) {
-                            // Convert from kbps to bps if needed
-                            if (currentThroughput < 100000) { // Assume it's in kbps if less than 100Mbps
-                                currentThroughput = currentThroughput * 1000;
-                            }
-                        }
-                    } catch (throughputError) {
-                        console.warn('Throughput API not available:', throughputError);
-                    }
-
-                    // If we have throughput data, update stats
-                    if (currentThroughput > 0) {
-                        dashboardData.networkStats.currentSpeed = currentThroughput;
-                        
-                        // Update average (exponential moving average)
-                        if (dashboardData.networkStats.averageSpeed === 0) {
-                            dashboardData.networkStats.averageSpeed = currentThroughput;
-                        } else {
-                            dashboardData.networkStats.averageSpeed = 
-                                (dashboardData.networkStats.averageSpeed * 0.8) + (currentThroughput * 0.2);
-                        }
-
-                        // Add to network history
-                        dashboardData.networkData.push({
-                            speed: currentThroughput,
-                            timestamp: Date.now()
-                        });
-
-                        if (dashboardData.networkData.length > 60) {
-                            dashboardData.networkData.shift();
-                        }
-                    }
-
                     console.log('Network stats:', {
-                        current: currentThroughput,
-                        average: dashboardData.networkStats.averageSpeed,
-                        total: dashboardData.networkStats.totalDownloaded
+                        totalDownloaded: dashboardData.networkStats.totalDownloaded
                     });
                 } catch (networkError) {
                     console.warn('Network monitoring failed:', networkError);

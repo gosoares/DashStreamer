@@ -30,6 +30,10 @@
         <label>Duration</label>
         <span>{{ formatDuration(duration) }}</span>
       </div>
+      <div class="info-item">
+        <label>Downloaded</label>
+        <span>{{ formatBytes(totalDownloaded) }}</span>
+      </div>
     </div>
     
     <div class="quality-selector" v-if="availableQualities.length > 1">
@@ -91,6 +95,10 @@ export default {
     currentQualityId: {
       type: String,
       default: ''
+    },
+    totalDownloaded: {
+      type: Number,
+      default: 0
     }
   },
   methods: {
@@ -113,6 +121,12 @@ export default {
         return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
       }
       return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    },
+    formatBytes(bytes) {
+      if (!bytes) return '0 B';
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(1024));
+      return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
     }
   }
 };
