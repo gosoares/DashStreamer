@@ -5,6 +5,22 @@
                 ← Back to videos
             </router-link>
             <h1>{{ videoInfo?.title || 'Loading...' }}</h1>
+            <div v-if="videoInfo" class="video-meta">
+                <p class="video-date">
+                    Uploaded on {{ formatDate(videoInfo.created) }}
+                </p>
+                <div class="status-container" v-if="videoInfo.status !== 'done'">
+                    <span :class="{
+                        'status-badge': true,
+                        'status-done': videoInfo.status === 'done',
+                        'status-pending': videoInfo.status === 'pending',
+                        'status-processing': videoInfo.status === 'processing',
+                        'status-error': videoInfo.status === 'error'
+                    }">
+                        {{ capitalizeStatus(videoInfo.status) }}
+                    </span>
+                </div>
+            </div>
         </div>
 
         <!-- Video Player -->
@@ -19,42 +35,530 @@
             {{ errorMessage }}
         </div>
 
-        <!-- Video Info -->
-        <div v-if="videoInfo" class="video-details">
-            <h2>{{ videoInfo.title }}</h2>
-            <p class="video-date">
-                Uploaded on {{ formatDate(videoInfo.created) }}
-            </p>
-            <div class="status-container" v-if="videoInfo.status !== 'done'">
-                <span :class="{
-                    'status-badge': true,
-                    'status-done': videoInfo.status === 'done',
-                    'status-pending': videoInfo.status === 'pending',
-                    'status-processing': videoInfo.status === 'processing',
-                    'status-error': videoInfo.status === 'error'
-                }">
-                    {{ capitalizeStatus(videoInfo.status) }}
-                </span>
-            </div>
+
+        <!-- Video Information Dashboard -->
+        <div v-if="videoInfo && videoInfo.status === 'done'" class="dashboard-container">
+            <VideoInfoPanel 
+                :video-info="dashboardData.videoInfo"
+                :network-data="dashboardData.networkData"
+                :network-stats="dashboardData.networkStats"
+                :buffer-data="dashboardData.bufferData"
+                :buffer-stats="dashboardData.bufferStats"
+                :performance-stats="dashboardData.performanceStats"
+            />
         </div>
     </main>
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import * as dashjs from 'dashjs';
 import ApiService from '@/services/ApiService';
 import { capitalizeStatus, formatDate } from '@/utils/formatters';
+import VideoInfoPanel from '@/components/VideoInfoPanel.vue';
 
 export default {
     name: 'PlayerView',
+    components: {
+        VideoInfoPanel
+    },
     setup() {
         const route = useRoute();
         const videoPlayer = ref(null);
         const videoInfo = ref(null);
         const errorMessage = ref('');
         let player = null;
+        let updateInterval = null;
+
+        // Dashboard data reactive state
+        const dashboardData = reactive({
+            videoInfo: {
+                currentResolution: 'N/A',
+                videoCodec: 'N/A',
+                audioCodec: 'N/A',
+                currentBitrate: 0,
+                frameRate: 0,
+                aspectRatio: 'N/A',
+                containerType: 'DASH',
+                duration: 0,
+                availableQualities: [],
+                currentQualityId: ''
+            },
+            networkData: [],
+            networkStats: {
+                currentSpeed: 0,
+                averageSpeed: 0,
+                totalDownloaded: 0
+            },
+            bufferData: [],
+            bufferStats: {
+                videoBufferLevel: 0,
+                audioBufferLevel: 0,
+                stallCount: 0
+            },
+            performanceStats: {
+                droppedFrames: 0,
+                totalFrames: 0,
+                dropRate: 0,
+                startupTime: 0,
+                totalStallTime: 0,
+                qualityChanges: 0
+            }
+        });
+
+        const updateDashboardData = () => {
+            if (!player) return;
+
+            try {
+                const videoElement = videoPlayer.value;
+                if (!videoElement) return;
+
+                console.log('=== DASHBOARD UPDATE START ===');
+                
+                // Reset complete data flag
+                dashboardData.videoInfo._hasCompleteData = false;
+                
+                // STEP 1: Try to get current representation directly (most accurate)
+                let gotCompleteDataFromCurrent = false;
+                
+                if (typeof player.getCurrentRepresentationForType === 'function') {
+                    try {
+                        const currentVideoRep = player.getCurrentRepresentationForType('video');
+                        console.log('🎯 getCurrentRepresentationForType result:', currentVideoRep);
+                        
+                        if (currentVideoRep) {
+                            console.log('Current representation properties:', Object.keys(currentVideoRep));
+                            console.log('Bandwidth:', currentVideoRep.bandwidth);
+                            console.log('Width/Height:', currentVideoRep.width, 'x', currentVideoRep.height);
+                            
+                            // If we have complete data, use it exclusively
+                            if (currentVideoRep.bandwidth && currentVideoRep.width && currentVideoRep.height) {
+                                dashboardData.videoInfo.currentBitrate = currentVideoRep.bandwidth;
+                                dashboardData.videoInfo.currentResolution = `${currentVideoRep.width}×${currentVideoRep.height}`;
+                                
+                                if (currentVideoRep.codecs) {
+                                    dashboardData.videoInfo.videoCodec = currentVideoRep.codecs.split(',')[0] || 'H.264';
+                                }
+                                
+                                gotCompleteDataFromCurrent = true;
+                                dashboardData.videoInfo._hasCompleteData = true;
+                                
+                                console.log('✅ SUCCESS: Got complete data from getCurrentRepresentationForType');
+                                console.log('Resolution:', dashboardData.videoInfo.currentResolution);
+                                console.log('Bitrate:', dashboardData.videoInfo.currentBitrate);
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('getCurrentRepresentationForType failed:', error);
+                    }
+                }
+                
+                // STEP 2: If we got complete data, skip other methods
+                if (gotCompleteDataFromCurrent) {
+                    console.log('✅ Using authoritative data from current representation, skipping fallbacks');
+                } else {
+                    console.log('⚠️ Fallback: getCurrentRepresentationForType didn\'t provide complete data');
+                    
+                    // STEP 3: Try quality index approach as fallback
+                    let videoQuality = -1;
+                    
+                    try {
+                        if (typeof player.getQualityFor === 'function') {
+                            videoQuality = player.getQualityFor('video');
+                        } else if (typeof player.getQuality === 'function') {
+                            videoQuality = player.getQuality('video');
+                        }
+                        console.log('Current quality index:', videoQuality);
+                    } catch (qualityError) {
+                        console.warn('Quality methods failed:', qualityError);
+                    }
+
+                    // STEP 4: Try to get quality list and match by index
+                    if (videoQuality >= 0) {
+                        console.log('🔍 Trying to get representation by quality index:', videoQuality);
+                        
+                        const possibleMethods = ['getBitrateInfoListFor', 'getBitrateInfoList'];
+                        let videoBitrateList = null;
+                        
+                        for (const method of possibleMethods) {
+                            if (typeof player[method] === 'function') {
+                                try {
+                                    videoBitrateList = player[method]('video');
+                                    if (videoBitrateList && videoBitrateList.length > 0) {
+                                        console.log(`✅ Got bitrate list from ${method}`);
+                                        break;
+                                    }
+                                } catch (error) {
+                                    console.warn(`${method} failed:`, error);
+                                }
+                            }
+                        }
+                        
+                        if (videoBitrateList && videoBitrateList.length > videoQuality) {
+                            const representation = videoBitrateList[videoQuality];
+                            console.log('🎯 Found representation at index', videoQuality, ':', representation);
+                            
+                            // Extract data from this specific representation
+                            let resolutionFound = false;
+                            let bitrateFound = false;
+                            
+                            // Try to get resolution
+                            if (representation.width && representation.height) {
+                                dashboardData.videoInfo.currentResolution = `${representation.width}×${representation.height}`;
+                                resolutionFound = true;
+                                console.log('✅ Set resolution from bitrate list:', representation.width, 'x', representation.height);
+                            }
+                            
+                            // Try to get bitrate
+                            const bitrate = representation.bitrate || representation.bandwidth;
+                            if (bitrate) {
+                                dashboardData.videoInfo.currentBitrate = bitrate < 100000 ? bitrate * 1000 : bitrate;
+                                bitrateFound = true;
+                                console.log('✅ Set bitrate from bitrate list:', bitrate);
+                            }
+                            
+                            if (resolutionFound && bitrateFound) {
+                                dashboardData.videoInfo._hasCompleteData = true;
+                                console.log('✅ SUCCESS: Got complete data from bitrate list method');
+                            }
+                        }
+                    }
+                }
+                
+                // STEP 6: Handle video element properties (but never override DASH resolution)
+                console.log('📱 Video element info:', {
+                    width: videoElement.videoWidth,
+                    height: videoElement.videoHeight,
+                    duration: videoElement.duration,
+                    hasCompleteDataFromDASH: dashboardData.videoInfo._hasCompleteData,
+                    currentDASHResolution: dashboardData.videoInfo.currentResolution
+                });
+                
+                // Set duration (always safe)
+                if (videoElement.duration) {
+                    dashboardData.videoInfo.duration = videoElement.duration;
+                }
+                
+                // Calculate aspect ratio (always useful, doesn't conflict)
+                if (videoElement.videoWidth && videoElement.videoHeight) {
+                    const aspectRatio = videoElement.videoWidth / videoElement.videoHeight;
+                    if (Math.abs(aspectRatio - 16/9) < 0.01) {
+                        dashboardData.videoInfo.aspectRatio = '16:9';
+                    } else if (Math.abs(aspectRatio - 4/3) < 0.01) {
+                        dashboardData.videoInfo.aspectRatio = '4:3';
+                    } else if (Math.abs(aspectRatio - 9/16) < 0.01) {
+                        dashboardData.videoInfo.aspectRatio = '9:16';
+                    } else {
+                        dashboardData.videoInfo.aspectRatio = aspectRatio.toFixed(2);
+                    }
+                }
+                
+                // CRITICAL: Only use video element resolution if we have NO DASH data whatsoever
+                if (!dashboardData.videoInfo._hasCompleteData && 
+                    (!dashboardData.videoInfo.currentResolution || dashboardData.videoInfo.currentResolution === 'N/A×N/A') &&
+                    videoElement.videoWidth && videoElement.videoHeight) {
+                    
+                    dashboardData.videoInfo.currentResolution = `${videoElement.videoWidth}×${videoElement.videoHeight}`;
+                    console.log('⚠️ FALLBACK: Using video element resolution (no DASH data):', dashboardData.videoInfo.currentResolution);
+                } else if (dashboardData.videoInfo._hasCompleteData) {
+                    console.log('✅ PRESERVED: DASH resolution protected from video element override:', dashboardData.videoInfo.currentResolution);
+                } else {
+                    console.log('🔍 Video element available but waiting for DASH data or metadata:', {
+                        videoElementReady: !!(videoElement.videoWidth && videoElement.videoHeight),
+                        readyState: videoElement.readyState
+                    });
+                    
+                    // If metadata isn't loaded yet, set up an event listener
+                    if (videoElement.readyState < 1) {
+                        const handleMetadataLoaded = () => {
+                            console.log('Metadata loaded, updating dimensions');
+                            if (videoElement.videoWidth && videoElement.videoHeight) {
+                                dashboardData.videoInfo.currentResolution = `${videoElement.videoWidth}×${videoElement.videoHeight}`;
+                                const aspectRatio = videoElement.videoWidth / videoElement.videoHeight;
+                                if (Math.abs(aspectRatio - 16/9) < 0.01) {
+                                    dashboardData.videoInfo.aspectRatio = '16:9';
+                                } else if (Math.abs(aspectRatio - 4/3) < 0.01) {
+                                    dashboardData.videoInfo.aspectRatio = '4:3';
+                                } else if (Math.abs(aspectRatio - 9/16) < 0.01) {
+                                    dashboardData.videoInfo.aspectRatio = '9:16';
+                                } else {
+                                    dashboardData.videoInfo.aspectRatio = aspectRatio.toFixed(2);
+                                }
+                            }
+                            videoElement.removeEventListener('loadedmetadata', handleMetadataLoaded);
+                        };
+                        videoElement.addEventListener('loadedmetadata', handleMetadataLoaded);
+                    }
+                }
+
+                // Estimate bitrate if not available from DASH
+                if (!dashboardData.videoInfo.currentBitrate || dashboardData.videoInfo.currentBitrate === 0) {
+                    // Method 1: Use current network throughput as estimate
+                    if (dashboardData.networkStats.currentSpeed > 0) {
+                        dashboardData.videoInfo.currentBitrate = Math.round(dashboardData.networkStats.currentSpeed);
+                        console.log('Estimated bitrate from network speed:', dashboardData.videoInfo.currentBitrate);
+                    }
+                    // Method 2: Estimate from resolution (rough calculation)
+                    else if (videoElement.videoWidth && videoElement.videoHeight) {
+                        const pixels = videoElement.videoWidth * videoElement.videoHeight;
+                        let estimatedBitrate = 0;
+                        
+                        // Rough bitrate estimation based on resolution
+                        if (pixels <= 640 * 480) { // 480p
+                            estimatedBitrate = 1000000; // 1 Mbps
+                        } else if (pixels <= 1280 * 720) { // 720p
+                            estimatedBitrate = 2500000; // 2.5 Mbps
+                        } else if (pixels <= 1920 * 1080) { // 1080p
+                            estimatedBitrate = 5000000; // 5 Mbps
+                        } else { // 4K+
+                            estimatedBitrate = 15000000; // 15 Mbps
+                        }
+                        
+                        dashboardData.videoInfo.currentBitrate = estimatedBitrate;
+                        console.log('Estimated bitrate from resolution:', estimatedBitrate, 'for', pixels, 'pixels');
+                    }
+                }
+
+                // STEP 7: Set reasonable defaults for missing data
+                if (!dashboardData.videoInfo.videoCodec || dashboardData.videoInfo.videoCodec === 'N/A') {
+                    dashboardData.videoInfo.videoCodec = 'H.264';
+                }
+                if (!dashboardData.videoInfo.audioCodec || dashboardData.videoInfo.audioCodec === 'N/A') {
+                    dashboardData.videoInfo.audioCodec = 'AAC';
+                }
+                if (!dashboardData.videoInfo.frameRate || dashboardData.videoInfo.frameRate === 0) {
+                    dashboardData.videoInfo.frameRate = 30;
+                }
+
+                // Get performance stats from video element
+                if (videoElement.getVideoPlaybackQuality) {
+                    try {
+                        const quality = videoElement.getVideoPlaybackQuality();
+                        dashboardData.performanceStats.droppedFrames = quality.droppedVideoFrames || 0;
+                        dashboardData.performanceStats.totalFrames = quality.totalVideoFrames || 0;
+                        dashboardData.performanceStats.dropRate = dashboardData.performanceStats.totalFrames > 0 
+                            ? dashboardData.performanceStats.droppedFrames / dashboardData.performanceStats.totalFrames 
+                            : 0;
+                    } catch (qualityError) {
+                        console.warn('Video quality stats not available:', qualityError);
+                    }
+                }
+
+                // Update buffer levels - try different approaches
+                try {
+                    // Method 1: Direct API call
+                    let videoBufferLevel = 0;
+                    let audioBufferLevel = 0;
+
+                    try {
+                        if (typeof player.getBufferLength === 'function') {
+                            videoBufferLevel = player.getBufferLength('video') || 0;
+                            audioBufferLevel = player.getBufferLength('audio') || 0;
+                        } else if (typeof player.getBuffer === 'function') {
+                            const buffers = player.getBuffer();
+                            videoBufferLevel = buffers?.video || 0;
+                            audioBufferLevel = buffers?.audio || 0;
+                        }
+                    } catch (bufferApiError) {
+                        console.warn('Buffer API not available, trying alternative:', bufferApiError);
+                        
+                        // Method 2: Use video element buffered property
+                        if (videoElement.buffered && videoElement.buffered.length > 0) {
+                            const currentTime = videoElement.currentTime;
+                            const buffered = videoElement.buffered;
+                            
+                            for (let i = 0; i < buffered.length; i++) {
+                                if (currentTime >= buffered.start(i) && currentTime <= buffered.end(i)) {
+                                    videoBufferLevel = buffered.end(i) - currentTime;
+                                    audioBufferLevel = videoBufferLevel; // Assume same for audio
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    dashboardData.bufferStats.videoBufferLevel = videoBufferLevel;
+                    dashboardData.bufferStats.audioBufferLevel = audioBufferLevel;
+
+                    // Add to buffer history
+                    dashboardData.bufferData.push({
+                        video: videoBufferLevel,
+                        audio: audioBufferLevel,
+                        timestamp: Date.now()
+                    });
+
+                    if (dashboardData.bufferData.length > 60) {
+                        dashboardData.bufferData.shift();
+                    }
+
+                    console.log('Buffer levels:', { video: videoBufferLevel, audio: audioBufferLevel });
+                } catch (bufferError) {
+                    console.warn('Buffer monitoring failed:', bufferError);
+                }
+
+                // Update network stats - simplified approach
+                try {
+                    // Try to get throughput from player with multiple method names
+                    let currentThroughput = 0;
+                    
+                    try {
+                        if (typeof player.getAverageThroughput === 'function') {
+                            currentThroughput = player.getAverageThroughput('video') || 0;
+                        } else if (typeof player.getThroughput === 'function') {
+                            currentThroughput = player.getThroughput('video') || 0;
+                        }
+                        
+                        if (currentThroughput > 0) {
+                            // Convert from kbps to bps if needed
+                            if (currentThroughput < 100000) { // Assume it's in kbps if less than 100Mbps
+                                currentThroughput = currentThroughput * 1000;
+                            }
+                        }
+                    } catch (throughputError) {
+                        console.warn('Throughput API not available:', throughputError);
+                    }
+
+                    // If we have throughput data, update stats
+                    if (currentThroughput > 0) {
+                        dashboardData.networkStats.currentSpeed = currentThroughput;
+                        
+                        // Update average (exponential moving average)
+                        if (dashboardData.networkStats.averageSpeed === 0) {
+                            dashboardData.networkStats.averageSpeed = currentThroughput;
+                        } else {
+                            dashboardData.networkStats.averageSpeed = 
+                                (dashboardData.networkStats.averageSpeed * 0.8) + (currentThroughput * 0.2);
+                        }
+
+                        // Add to network history
+                        dashboardData.networkData.push({
+                            speed: currentThroughput,
+                            timestamp: Date.now()
+                        });
+
+                        if (dashboardData.networkData.length > 60) {
+                            dashboardData.networkData.shift();
+                        }
+                    }
+
+                    console.log('Network stats:', {
+                        current: currentThroughput,
+                        average: dashboardData.networkStats.averageSpeed,
+                        total: dashboardData.networkStats.totalDownloaded
+                    });
+                } catch (networkError) {
+                    console.warn('Network monitoring failed:', networkError);
+                }
+
+                // STEP 8: Final summary
+                console.log('=== FINAL DASHBOARD RESULTS ===');
+                console.log('🎬 Resolution:', dashboardData.videoInfo.currentResolution);
+                console.log('📊 Bitrate:', dashboardData.videoInfo.currentBitrate, 'bps =', (dashboardData.videoInfo.currentBitrate / 1000000).toFixed(2), 'Mbps');
+                console.log('🎯 Source consistency:', dashboardData.videoInfo._hasCompleteData ? '✅ DASH (matched)' : '⚠️ Mixed sources');
+                console.log('🎞️ Codec:', dashboardData.videoInfo.videoCodec, '/', dashboardData.videoInfo.audioCodec);
+                console.log('📐 Aspect:', dashboardData.videoInfo.aspectRatio);
+                console.log('=== END DASHBOARD UPDATE ===');
+                
+                // Clean up internal tracking flag
+                delete dashboardData.videoInfo._hasCompleteData;
+
+            } catch (error) {
+                console.error('❌ Error updating dashboard data:', error);
+            }
+        };
+
+        const setupDashEventListeners = () => {
+            if (!player) return;
+
+            // Quality change events
+            player.on(dashjs.MediaPlayer.events.QUALITY_CHANGE_RENDERED, (e) => {
+                dashboardData.performanceStats.qualityChanges++;
+                updateDashboardData();
+            });
+
+            // Buffer events
+            player.on(dashjs.MediaPlayer.events.BUFFER_LEVEL_UPDATED, (e) => {
+                updateDashboardData();
+            });
+
+            // Stall events
+            player.on(dashjs.MediaPlayer.events.PLAYBACK_STALLED, (e) => {
+                dashboardData.bufferStats.stallCount++;
+            });
+
+            // Fragment loading events
+            player.on(dashjs.MediaPlayer.events.FRAGMENT_LOADING_COMPLETED, (e) => {
+                console.log('Fragment loaded:', e);
+                if (e && e.request) {
+                    const bytesLoaded = e.request.bytesLoaded || e.request.responseLength || e.request.byteLength;
+                    if (bytesLoaded) {
+                        dashboardData.networkStats.totalDownloaded += bytesLoaded;
+                        console.log('Total downloaded updated:', dashboardData.networkStats.totalDownloaded);
+                    }
+                }
+            });
+
+            // Playback started event
+            player.on(dashjs.MediaPlayer.events.PLAYBACK_STARTED, (e) => {
+                const startTime = performance.now() - dashboardData.performanceStats.startupTime;
+                dashboardData.performanceStats.startupTime = startTime / 1000; // Convert to seconds
+                
+                // Force update when playback starts
+                setTimeout(updateDashboardData, 100);
+                setTimeout(updateDashboardData, 500);
+                setTimeout(updateDashboardData, 1000);
+            });
+
+            // Stream initialized event - good time to get video info
+            player.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, (e) => {
+                console.log('Stream initialized, updating dashboard data');
+                setTimeout(updateDashboardData, 100);
+            });
+
+            // Manifest loaded event
+            player.on(dashjs.MediaPlayer.events.MANIFEST_LOADED, (e) => {
+                console.log('Manifest loaded event:', e);
+                
+                // Try to get manifest data
+                try {
+                    if (e && e.data) {
+                        console.log('Manifest data available:', e.data);
+                        
+                        // Look for video representations in manifest
+                        if (e.data.Period && e.data.Period.length > 0) {
+                            const period = e.data.Period[0];
+                            if (period.AdaptationSet) {
+                                period.AdaptationSet.forEach((adaptationSet, index) => {
+                                    console.log(`AdaptationSet ${index}:`, adaptationSet);
+                                    if (adaptationSet.Representation && adaptationSet.contentType === 'video') {
+                                        console.log('Video representations found:', adaptationSet.Representation);
+                                        
+                                        // Store representations for later use
+                                        if (adaptationSet.Representation.length > 0) {
+                                            const rep = adaptationSet.Representation[0];
+                                            if (rep.bandwidth) {
+                                                dashboardData.videoInfo.currentBitrate = rep.bandwidth;
+                                                console.log('Set bitrate from manifest:', rep.bandwidth);
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+                } catch (manifestError) {
+                    console.warn('Error parsing manifest:', manifestError);
+                }
+                
+                setTimeout(updateDashboardData, 100);
+            });
+
+            // Metrics collection
+            player.on(dashjs.MediaPlayer.events.METRICS_CHANGED, (e) => {
+                updateDashboardData();
+            });
+        };
 
         const initializePlayer = async () => {
             try {
@@ -67,15 +571,47 @@ export default {
                     return;
                 }
 
+                // Record startup time
+                dashboardData.performanceStats.startupTime = performance.now();
+
                 // Initialize DASH player
                 player = dashjs.MediaPlayer().create();
                 player.initialize(videoPlayer.value, ApiService.getManifestUrl(route.params.id), true);
+
+                // Setup event listeners
+                setupDashEventListeners();
+
+                // Add HTML5 video element event listeners
+                if (videoPlayer.value) {
+                    videoPlayer.value.addEventListener('loadedmetadata', () => {
+                        console.log('HTML5 loadedmetadata event fired');
+                        setTimeout(updateDashboardData, 100);
+                    });
+                    
+                    videoPlayer.value.addEventListener('canplay', () => {
+                        console.log('HTML5 canplay event fired');
+                        setTimeout(updateDashboardData, 100);
+                    });
+                    
+                    videoPlayer.value.addEventListener('playing', () => {
+                        console.log('HTML5 playing event fired');
+                        setTimeout(updateDashboardData, 100);
+                    });
+                }
 
                 // Add error handling
                 player.on('error', (e) => {
                     console.error('DASH player error:', e);
                     errorMessage.value = 'Error playing video';
                 });
+
+                // Start periodic updates (more frequent for debugging)
+                updateInterval = setInterval(updateDashboardData, 500);
+
+                // Initial data update with multiple attempts
+                setTimeout(updateDashboardData, 1000);
+                setTimeout(updateDashboardData, 3000);
+                setTimeout(updateDashboardData, 5000);
 
             } catch (error) {
                 console.error('Error initializing player:', error);
@@ -86,6 +622,10 @@ export default {
         onMounted(initializePlayer);
 
         onUnmounted(() => {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
             if (player) {
                 player.destroy();
                 player = null;
@@ -96,6 +636,7 @@ export default {
             videoPlayer,
             videoInfo,
             errorMessage,
+            dashboardData,
             capitalizeStatus,
             formatDate
         };
@@ -118,6 +659,20 @@ export default {
 .header h1 {
     font-size: 2rem;
     font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.video-meta {
+    margin-top: 0.5rem;
+}
+
+.video-meta .video-date {
+    color: var(--gray-600);
+    margin-bottom: 0.5rem;
+}
+
+.video-meta .status-container {
+    margin: 0;
 }
 
 .video-player-container {
@@ -142,28 +697,9 @@ export default {
     object-fit: contain; /* Maintain aspect ratio */
 }
 
-.video-details {
+.dashboard-container {
     max-width: 1024px;
     margin: 0 auto;
-    background: white;
-    padding: 1.5rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.video-details h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.video-date {
-    color: var(--gray-600);
-    margin-bottom: 1rem;
-}
-
-.status-container {
-    margin-top: 1rem;
 }
 
 /* Responsive adjustments for mobile devices */
