@@ -51,10 +51,12 @@ export default {
 
 <style scoped>
 .buffer-stats {
-  background: #f8f9fa;
+  background: white;
+  border: 1px solid #e9ecef;
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .buffer-stats h3 {

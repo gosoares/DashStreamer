@@ -38,13 +38,44 @@
 
         <!-- Video Information Dashboard -->
         <div v-if="videoInfo && videoInfo.status === 'done'" class="dashboard-container">
-            <VideoInfoPanel 
-                :video-info="dashboardData.videoInfo"
-                :network-stats="dashboardData.networkStats"
-                :buffer-stats="dashboardData.bufferStats"
-                :performance-stats="dashboardData.performanceStats"
-                @clear-segment-history="clearSegmentHistory"
+            <!-- Segment Downloads - Full Width -->
+            <SegmentDownloadPanel 
+                :segment-downloads="dashboardData.networkStats.segmentDownloads"
+                @clear-history="clearSegmentHistory"
             />
+            
+            <!-- Video Information - Full Width -->
+            <TechnicalInfo 
+                :current-resolution="dashboardData.videoInfo.currentResolution"
+                :video-codec="dashboardData.videoInfo.videoCodec"
+                :audio-codec="dashboardData.videoInfo.audioCodec"
+                :current-bitrate="dashboardData.videoInfo.currentBitrate"
+                :frame-rate="dashboardData.videoInfo.frameRate"
+                :aspect-ratio="dashboardData.videoInfo.aspectRatio"
+                :container-type="dashboardData.videoInfo.containerType"
+                :duration="dashboardData.videoInfo.duration"
+                :available-qualities="dashboardData.videoInfo.availableQualities"
+                :current-quality-id="dashboardData.videoInfo.currentQualityId"
+                :total-downloaded="dashboardData.networkStats.totalDownloaded"
+            />
+            
+            <!-- Buffer and Performance Stats - Side by Side -->
+            <div class="cards-grid">
+                <BufferStats 
+                    :video-buffer-level="dashboardData.bufferStats.videoBufferLevel"
+                    :audio-buffer-level="dashboardData.bufferStats.audioBufferLevel"
+                    :stall-count="dashboardData.bufferStats.stallCount"
+                />
+                
+                <PerformanceStats 
+                    :dropped-frames="dashboardData.performanceStats.droppedFrames"
+                    :total-frames="dashboardData.performanceStats.totalFrames"
+                    :drop-rate="dashboardData.performanceStats.dropRate"
+                    :startup-time="dashboardData.performanceStats.startupTime"
+                    :total-stall-time="dashboardData.performanceStats.totalStallTime"
+                    :quality-changes="dashboardData.performanceStats.qualityChanges"
+                />
+            </div>
         </div>
     </main>
 </template>
@@ -55,12 +86,18 @@ import { useRoute } from 'vue-router';
 import * as dashjs from 'dashjs';
 import ApiService from '@/services/ApiService';
 import { capitalizeStatus, formatDate } from '@/utils/formatters';
-import VideoInfoPanel from '@/components/VideoInfoPanel.vue';
+import TechnicalInfo from '@/components/TechnicalInfo.vue';
+import BufferStats from '@/components/BufferStats.vue';
+import SegmentDownloadPanel from '@/components/SegmentDownloadPanel.vue';
+import PerformanceStats from '@/components/PerformanceStats.vue';
 
 export default {
     name: 'PlayerView',
     components: {
-        VideoInfoPanel
+        TechnicalInfo,
+        BufferStats,
+        SegmentDownloadPanel,
+        PerformanceStats
     },
     setup() {
         const route = useRoute();
@@ -813,6 +850,13 @@ export default {
     margin: 0 auto;
 }
 
+.cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
 /* Responsive adjustments for mobile devices */
 @media (max-width: 768px) {
     .video-player video {
@@ -821,6 +865,11 @@ export default {
     
     .video-player-container {
         margin-bottom: 1rem;
+    }
+    
+    .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 }
 

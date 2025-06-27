@@ -1,6 +1,6 @@
 <template>
   <div class="technical-info">
-    <h3>Technical Information</h3>
+    <h3>Video Information</h3>
     <div class="info-grid">
       <div class="info-item">
         <label>Resolution</label>
@@ -134,10 +134,12 @@ export default {
 
 <style scoped>
 .technical-info {
-  background: #f8f9fa;
+  background: white;
+  border: 1px solid #e9ecef;
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .technical-info h3 {
