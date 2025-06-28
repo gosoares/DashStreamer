@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+import re
 from datetime import datetime
 from pathlib import Path
 import subprocess
@@ -19,6 +20,32 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 
+def title_to_snake_case(title):
+    """Convert video title to snake_case for folder naming."""
+    # Remove or replace special characters
+    snake_case = re.sub(r'[^\w\s-]', '', title.strip())
+    # Replace spaces and hyphens with underscores
+    snake_case = re.sub(r'[-\s]+', '_', snake_case)
+    # Convert to lowercase
+    snake_case = snake_case.lower()
+    # Remove leading/trailing underscores
+    snake_case = snake_case.strip('_')
+    # Ensure it's not empty
+    if not snake_case:
+        snake_case = 'untitled_video'
+    return snake_case
+
+
+def ensure_unique_folder_name(base_name):
+    """Ensure the folder name is unique by adding a suffix if needed."""
+    counter = 1
+    folder_name = base_name
+    while (UPLOADS_DIR / folder_name).exists():
+        folder_name = f"{base_name}_{counter}"
+        counter += 1
+    return folder_name
+
+
 
 
 @app.route("/videos", methods=["POST"])
@@ -30,7 +57,9 @@ def upload_video():
     if file.filename == "" or not is_file_allowed(file.filename):
         return jsonify({"error": "Invalid file"}), 400
 
-    video_id = str(uuid.uuid4())
+    # Create snake_case folder name from title
+    base_folder_name = title_to_snake_case(title)
+    video_id = ensure_unique_folder_name(base_folder_name)
     video_dir = UPLOADS_DIR / video_id
     video_dir.mkdir(parents=True, exist_ok=True)
 
