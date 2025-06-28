@@ -723,6 +723,21 @@ export default {
 
                 // Initialize DASH player
                 player = dashjs.MediaPlayer().create();
+                
+                // Configure player to start at lowest quality
+                player.updateSettings({
+                    streaming: {
+                        abr: {
+                            initialBitrate: {
+                                video: 0  // Start with lowest quality
+                            },
+                            autoSwitchBitrate: {
+                                video: true  // Allow adaptive bitrate after initial selection
+                            }
+                        }
+                    }
+                });
+                
                 player.initialize(videoPlayer.value, ApiService.getManifestUrl(route.params.id), true);
 
                 // Setup event listeners
