@@ -283,7 +283,7 @@ def create_dash_stream(
         video = ffmpeg_streaming.input(str(processed_input))
         dash = video.dash(
             Formats.h264(),
-            seg_duration=2,
+            seg_duration=4,
             use_template=1,
             use_timeline=0,
             force_key_frames="expr:gte(t,n_forced*1)",

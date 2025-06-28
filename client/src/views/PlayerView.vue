@@ -38,6 +38,12 @@
 
         <!-- Video Information Dashboard -->
         <div v-if="videoInfo && videoInfo.status === 'done'" class="dashboard-container">
+            <!-- Quality Timeline Chart - Full Width -->
+            <QualityTimelineChart 
+                :segment-downloads="dashboardData.networkStats.segmentDownloads"
+                :video-duration="dashboardData.videoInfo.duration"
+            />
+            
             <!-- Segment Downloads - Full Width -->
             <SegmentDownloadPanel 
                 :segment-downloads="dashboardData.networkStats.segmentDownloads"
@@ -90,6 +96,7 @@ import TechnicalInfo from '@/components/TechnicalInfo.vue';
 import BufferStats from '@/components/BufferStats.vue';
 import SegmentDownloadPanel from '@/components/SegmentDownloadPanel.vue';
 import PerformanceStats from '@/components/PerformanceStats.vue';
+import QualityTimelineChart from '@/components/QualityTimelineChart.vue';
 
 export default {
     name: 'PlayerView',
@@ -97,7 +104,8 @@ export default {
         TechnicalInfo,
         BufferStats,
         SegmentDownloadPanel,
-        PerformanceStats
+        PerformanceStats,
+        QualityTimelineChart
     },
     setup() {
         const route = useRoute();
