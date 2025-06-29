@@ -232,7 +232,11 @@ When debug mode is enabled via `DEBUG_VIDEO_PROCESSING=true`:
 
 - **HomeView:** Lists all videos with thumbnails, titles, and status badges. Clicking a video opens the player.
 - **UploadView:** Form to upload a video and title. Shows upload progress and processing status.
-- **PlayerView:** Streams the video using dash.js and displays metadata.
+- **PlayerView:** Streams the video using dash.js with comprehensive streaming analytics dashboard.
+- **QualityTimelineChart:** Interactive timeline visualization showing video quality changes over time.
+- **BufferStats:** Real-time buffer level chart with color-coded health zones.
+- **SegmentDownloadPanel:** Table tracking all downloaded segments with performance metrics.
+- **TechnicalInfo & PerformanceStats:** Detailed streaming metrics and video information.
 - **ApiService.js:** Handles all HTTP requests to the Flask API.
 
 ### API Integration
@@ -251,6 +255,17 @@ When debug mode is enabled via `DEBUG_VIDEO_PROCESSING=true`:
   - Mobile: Max height 60% of viewport
   - Mobile Portrait: Max height 50% of viewport
 - **Auto-scaling:** Videos scale appropriately without distortion
+
+### Enhanced Player Dashboard
+
+The PlayerView includes comprehensive streaming analytics with real-time visualizations:
+
+- **Quality Timeline Chart:** Interactive timeline showing video quality changes with hover tooltips
+- **Buffer Status Visualization:** Real-time buffer level chart with color-coded health zones (critical/warning/good)
+- **Segment Download Tracking:** Complete history of downloaded segments with performance metrics
+- **Streaming Analytics:** Frame statistics, stall events, quality changes, and network performance
+- **Responsive Layout:** All dashboard components adapt to mobile screens
+- **Real-time Updates:** Charts and metrics update live during video playback
 
 ---
 
