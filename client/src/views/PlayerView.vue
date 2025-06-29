@@ -44,6 +44,11 @@
                 :video-duration="dashboardData.videoInfo.duration"
             />
             
+            <!-- Buffer Status - Full Width -->
+            <BufferStats 
+                :video-buffer-level="dashboardData.bufferStats.videoBufferLevel"
+            />
+            
             <!-- Segment Downloads - Full Width -->
             <SegmentDownloadPanel 
                 :segment-downloads="dashboardData.networkStats.segmentDownloads"
@@ -65,23 +70,15 @@
                 :total-downloaded="dashboardData.networkStats.totalDownloaded"
             />
             
-            <!-- Buffer and Performance Stats - Side by Side -->
-            <div class="cards-grid">
-                <BufferStats 
-                    :video-buffer-level="dashboardData.bufferStats.videoBufferLevel"
-                    :audio-buffer-level="dashboardData.bufferStats.audioBufferLevel"
-                    :stall-count="dashboardData.bufferStats.stallCount"
-                />
-                
-                <PerformanceStats 
-                    :dropped-frames="dashboardData.performanceStats.droppedFrames"
-                    :total-frames="dashboardData.performanceStats.totalFrames"
-                    :drop-rate="dashboardData.performanceStats.dropRate"
-                    :startup-time="dashboardData.performanceStats.startupTime"
-                    :total-stall-time="dashboardData.performanceStats.totalStallTime"
-                    :quality-changes="dashboardData.performanceStats.qualityChanges"
-                />
-            </div>
+            <!-- Performance Stats - Full Width -->
+            <PerformanceStats 
+                :dropped-frames="dashboardData.performanceStats.droppedFrames"
+                :total-frames="dashboardData.performanceStats.totalFrames"
+                :drop-rate="dashboardData.performanceStats.dropRate"
+                :startup-time="dashboardData.performanceStats.startupTime"
+                :total-stall-time="dashboardData.performanceStats.totalStallTime"
+                :quality-changes="dashboardData.performanceStats.qualityChanges"
+            />
         </div>
     </main>
 </template>
