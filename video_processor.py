@@ -90,58 +90,42 @@ def generate_representations(
     Returns:
         list: List of Representation objects
     """
-    # Define target heights for different quality levels
-    # We'll calculate width to maintain exact aspect ratio
-    target_heights = []
+    is_portrait = display_height > display_width
+    max_quality = display_width if is_portrait else display_height
+    target_qualities = [
+        q for q in [2160, 1440, 1080, 720, 480, 360, 240, 144] if q <= max_quality
+    ]
 
-    # For portrait videos, use target widths instead of heights
-    if aspect_ratio < 1:  # Portrait
-        # Define target widths for portrait videos
-        target_widths = []
-        if display_width >= 1080:
-            target_widths.append(1080)
-        if display_width >= 720:
-            target_widths.append(720)
-        if display_width >= 540:
-            target_widths.append(540)
-        if display_width >= 360:
-            target_widths.append(360)
-
-        if not target_widths:
-            target_widths.append(display_width)
-
-        # Convert target widths to target heights for portrait
-        for target_width in target_widths:
+    resolutions = []
+    if is_portrait:
+        # For portrait videos, we use target widths instead of heights
+        for target_width in target_qualities:
             target_height = int(target_width / aspect_ratio)
-            target_heights.append(target_height)
-    else:  # Landscape
-        # Use traditional height-based approach for landscape
-        if display_height >= 1080:
-            target_heights.append(1080)
-        if display_height >= 720:
-            target_heights.append(720)
-        if display_height >= 540:
-            target_heights.append(540)
-        if display_height >= 360:
-            target_heights.append(360)
+            resolutions.append((target_width, target_height))
+    else:
+        # For landscape videos, we use traditional height-based approach
+        for target_height in target_qualities:
+            target_width = int(target_height * aspect_ratio)
+            resolutions.append((target_width, target_height))
 
-        if not target_heights:
-            target_heights.append(display_height)
-
-    representations = []
-
-    # Bitrate mapping based on resolution (rough estimates)
+    # (video, audio) bitrates based on resolution
     bitrate_map = {
-        1080: 3000,
-        720: 1500,
-        540: 800,
-        360: 400,
+        2160: (35840, 320),
+        1440: (16384, 320),
+        1080: (8192, 320),
+        720: (5120, 320),
+        480: (2560, 192),
+        360: (1024, 128),
+        240: (700, 94),
+        144: (340, 64),
     }
 
-    for target_height in target_heights:
+    representations = []
+    for resolution in resolutions:
         # Calculate width maintaining exact aspect ratio
-        width = int(target_height * aspect_ratio)
-        height = target_height
+        width = resolution[0]
+        height = resolution[1]
+        quality = width if is_portrait else height
 
         # Ensure both dimensions are even (required for many codecs)
         if width % 2 != 0:
@@ -149,13 +133,11 @@ def generate_representations(
         if height % 2 != 0:
             height += 1
 
-        # Get appropriate bitrate, or calculate based on resolution
-        video_bitrate = bitrate_map.get(height, max(200, int(width * height * 0.001)))
-        audio_bitrate = 128 if height >= 720 else 96
+        bitrates = bitrate_map[quality]
 
         representations.append(
             Representation(
-                Size(width, height), Bitrate(video_bitrate * 1000, audio_bitrate * 1000)
+                Size(width, height), Bitrate(bitrates[0] * 1024, bitrates[1] * 1024)
             )
         )
 
