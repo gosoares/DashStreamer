@@ -42,6 +42,7 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { formatBitrate } from '@/utils/formatters'
 
 export default {
   name: 'QualityTimelineChart',
@@ -267,7 +268,7 @@ export default {
           y: event.clientY - rect.top - 10,
           timeRange: hoveredSegment.timeRange || 'N/A',
           resolution: hoveredSegment.resolution || 'N/A',
-          bitrate: hoveredSegment.bitrate || 'N/A',
+          bitrate: hoveredSegment.bitrate,
           segmentName: hoveredSegment.segmentName || 'N/A'
         }
         canvas.value.style.cursor = 'pointer'

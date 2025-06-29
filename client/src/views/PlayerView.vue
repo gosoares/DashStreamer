@@ -91,7 +91,7 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import * as dashjs from 'dashjs';
 import ApiService from '@/services/ApiService';
-import { capitalizeStatus, formatDate } from '@/utils/formatters';
+import { capitalizeStatus, formatDate, formatBitrate } from '@/utils/formatters';
 import TechnicalInfo from '@/components/TechnicalInfo.vue';
 import BufferStats from '@/components/BufferStats.vue';
 import SegmentDownloadPanel from '@/components/SegmentDownloadPanel.vue';
@@ -578,8 +578,8 @@ export default {
                             }
                             
                             if (dashboardData.videoInfo.currentBitrate && dashboardData.videoInfo.currentBitrate > 0) {
-                                // Convert bitrate from bps to kbps for display
-                                bitrate = `${Math.round(dashboardData.videoInfo.currentBitrate / 1000)}k`;
+                                // Format bitrate properly using the formatter
+                                bitrate = formatBitrate(dashboardData.videoInfo.currentBitrate);
                             }
                         }
                         

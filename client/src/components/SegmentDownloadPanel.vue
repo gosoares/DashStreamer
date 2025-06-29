@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import { computed } from 'vue'
+import { formatBitrate } from '@/utils/formatters'
 
 export default {
   name: 'SegmentDownloadPanel',
@@ -118,7 +118,9 @@ export default {
       const sizes = ['B/s', 'KB/s', 'MB/s', 'GB/s']
       const i = Math.floor(Math.log(bytesPerSecond) / Math.log(k))
       return parseFloat((bytesPerSecond / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-    }
+    },
+    
+    formatBitrate
   }
 }
 </script>

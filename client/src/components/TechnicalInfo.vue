@@ -53,6 +53,7 @@
 </template>
 
 <script>
+import { formatBitrate } from '@/utils/formatters';
 export default {
   name: 'TechnicalInfo',
   props: {
@@ -102,15 +103,7 @@ export default {
     }
   },
   methods: {
-    formatBitrate(bitrate) {
-      if (!bitrate) return 'N/A';
-      if (bitrate >= 1000000) {
-        return `${(bitrate / 1000000).toFixed(1)} Mbps`;
-      } else if (bitrate >= 1000) {
-        return `${(bitrate / 1000).toFixed(0)} kbps`;
-      }
-      return `${bitrate} bps`;
-    },
+    formatBitrate,
     formatDuration(seconds) {
       if (!seconds) return 'N/A';
       const hours = Math.floor(seconds / 3600);
