@@ -26,6 +26,8 @@ DashStreamer is a full-stack web application for uploading, processing, and stre
 
 The application features a Flask backend for video processing and API, a Vue.js frontend for a modern user interface, and includes an academic presentation built with Slidev to showcase the technical implementation and achievements.
 
+**📑 Academic Presentation:** [View Slides](https://gosoares.github.io/DashStreamer/)
+
 ---
 
 ## Technology Stack
