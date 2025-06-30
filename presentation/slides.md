@@ -570,3 +570,54 @@ Segmentos de 4 segundos
   <img src="/client_player.png" alt="Player Page" style="max-width:36vw; max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
   <img src="/client_player_bottom.png" alt="Player Page Bottom" style="max-width:36vw; max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
 </div>
+
+---
+
+# Demonstração
+
+<div class="relative">
+  <div class="grid grid-cols-2 gap-2">
+    <div class="relative bg-black">
+      <video 
+        id="demo-video"
+        src="/demo.mp4" 
+        controls 
+        style="width: 100%; height: 420px; object-fit: cover; object-position: top;"
+        class="border-2 border-gray-200 dark:border-gray-700">
+      </video>
+    </div>
+    
+  <div class="relative bg-black overflow-hidden">
+    <video 
+      src="/demo.mp4" 
+      style="width: 100%; height: 840px; object-fit: cover; object-position: top; margin-top: -420px;"
+      class="border-2 border-gray-200 dark:border-gray-700">
+    </video>
+  </div>
+  </div>
+</div>
+
+<script setup>
+// Sync the two videos
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  const videos = document.querySelectorAll('video[src="/demo.mp4"]')
+  const mainVideo = videos[0]
+  const syncVideo = videos[1]
+  
+  if (mainVideo && syncVideo) {
+    // Sync play/pause
+    mainVideo.addEventListener('play', () => syncVideo.play())
+    mainVideo.addEventListener('pause', () => syncVideo.pause())
+    mainVideo.addEventListener('timeupdate', () => {
+      if (Math.abs(syncVideo.currentTime - mainVideo.currentTime) > 0.3) {
+        syncVideo.currentTime = mainVideo.currentTime
+      }
+    })
+    
+    // Remove controls from sync video
+    syncVideo.removeAttribute('controls')
+  }
+})
+</script>
