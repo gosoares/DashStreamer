@@ -222,6 +222,11 @@ mdc: true
 
 # Pipeline de Processamento de Vídeo
 
+<div class="absolute top-11 right-16 flex items-center gap-1">
+<img src="/python-logo.png" class="w-8 h-8" alt="Python" />
+<span class="text-lg font-medium text-yellow-600 dark:text-yellow-400">Python</span>
+</div>
+
 <div class="light:block dark:hidden">
 
 ```mermaid {theme: 'base'}
@@ -527,7 +532,7 @@ Segmentos de 4 segundos
 
 # Servidor
 
-<div class="absolute top-10 right-16 flex items-center gap-3">
+<div class="absolute top-11 right-16 flex items-center gap-1">
 <img src="/flask-logo.svg" class="w-8 h-8" alt="Flask" />
 <span class="text-lg font-medium text-gray-600 dark:text-gray-400">Flask</span>
 </div>
@@ -549,9 +554,9 @@ Segmentos de 4 segundos
 
 # Cliente
 
-<div class="absolute top-10 right-16 flex items-center gap-3">
-<img src="/vuejs-logo.svg" class="w-8 h-8" alt="Vue.js" />
-<span class="text-lg font-medium text-green-600 dark:text-green-400">Vue.js</span>
+<div class="absolute top-11 right-16 flex items-center gap-1">
+<img src="/vuejs-logo.svg" class="w-8 h-8" alt="vue.js" />
+<span class="text-lg font-medium text-green-600 dark:text-green-400">vue.js</span>
 </div>
 
 <div class="flex flex-row gap-6 items-center justify-center" style="width:100%;">
@@ -561,11 +566,11 @@ Segmentos de 4 segundos
 
 ---
 
-# Cliente
+# Player
 
-<div class="absolute top-10 right-16 flex items-center gap-3">
-<img src="/vuejs-logo.svg" class="w-8 h-8" alt="Vue.js" />
-<span class="text-lg font-medium text-green-600 dark:text-green-400">Vue.js</span>
+<div class="absolute top-11 right-16 flex items-center gap-1">
+<img src="/dashjs-logo.png" class="w-8 h-8" alt="dash.js" />
+<span class="text-lg font-medium text-gray-600 dark:text-gray-400">dash.js</span>
 </div>
 
 
