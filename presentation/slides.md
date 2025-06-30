@@ -276,7 +276,7 @@ flowchart TD
 
 </div>
 
-<div class="text-sm leading-tight bg-gray-50 p-2 rounded-lg">
+<div class="text-sm leading-tight bg-gray-50 dark:bg-gray-800 p-2 rounded-lg">
 
 | **Qualidade** | **Bitrate** | **Paisagem 16:9** | **Retrato 9:16** |
 |:----------|---------------:|:-------------:|:---------------:|
@@ -309,7 +309,7 @@ flowchart TD
 
 #### Arquivos gerados:
 
-<div class="bg-gray-50 p-2 rounded-lg">
+<div class="bg-gray-50 dark:bg-gray-800 p-2 rounded-lg">
 
 ```bash
 video_folder/
@@ -392,7 +392,7 @@ Segmentos de 4 segundos
 <span class="text-lg font-medium text-gray-600 dark:text-gray-400">Flask</span>
 </div>
 
-<div class="bg-gray-50 p-2 rounded-lg">
+<div class="bg-gray-50 dark:bg-gray-800 p-2 rounded-lg">
 
 | Método | Endpoint | Descrição |
 |--------|----------|---------|
