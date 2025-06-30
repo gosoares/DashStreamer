@@ -621,3 +621,19 @@ onMounted(() => {
   }
 })
 </script>
+
+---
+
+<div class="flex flex-col items-center justify-center h-full text-center">
+
+<div class="text-8xl mb-12">🎬</div>
+
+<div class="text-6xl font-bold mb-16" style="color: var(--slidev-theme-primary);">
+Obrigado!
+</div>
+
+<div class="text-4xl font-semibold text-gray-700 dark:text-gray-300">
+Perguntas?
+</div>
+
+</div>
