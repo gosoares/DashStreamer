@@ -56,7 +56,7 @@ mdc: true
   <text x="15" y="145" class="text-xs fill-gray-700 dark:fill-gray-300 font-medium">1080p (8 Mbps)</text>
   <text x="15" y="185" class="text-xs fill-gray-700 dark:fill-gray-300 font-medium"> 720p (5 Mbps)</text>
   <text x="15" y="225" class="text-xs fill-gray-700 dark:fill-gray-300 font-medium"> 480p (2.5 Mbps)</text>
-  <text x="15" y="265" class="text-xs fill-gray-700 dark:fill-gray-300 font-medium">  360p (1 Mbps)</text>
+  <text x="15" y="265" class="text-xs fill-gray-700 dark:fill-gray-300 font-medium">360p (1 Mbps)</text>
   
   <!-- Segment grid (9 segments x 6 quality levels) -->
   <!-- 4K segments -->
@@ -104,15 +104,15 @@ mdc: true
   <rect x="486" y="165" width="44" height="28" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="0.5"/>
   
   <!-- 480p segments -->
-  <rect x="110" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
-  <rect x="157" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
-  <rect x="204" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
-  <rect x="251" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
-  <rect x="298" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
-  <rect x="345" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
-  <rect x="392" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
-  <rect x="439" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
-  <rect x="486" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
+  <rect x="110" y="205" width="44" height="28" fill="#ebd300" opacity="0.3" stroke="#ebd300" stroke-width="0.5"/>
+  <rect x="157" y="205" width="44" height="28" fill="#ebd300" opacity="0.3" stroke="#ebd300" stroke-width="0.5"/>
+  <rect x="204" y="205" width="44" height="28" fill="#ebd300" opacity="0.3" stroke="#ebd300" stroke-width="0.5"/>
+  <rect x="251" y="205" width="44" height="28" fill="#ebd300" opacity="0.3" stroke="#ebd300" stroke-width="0.5"/>
+  <rect x="298" y="205" width="44" height="28" fill="#ebd300" opacity="0.3" stroke="#ebd300" stroke-width="0.5"/>
+  <rect x="345" y="205" width="44" height="28" fill="#ebd300" opacity="0.3" stroke="#ebd300" stroke-width="0.5"/>
+  <rect x="392" y="205" width="44" height="28" fill="#ebd300" opacity="0.3" stroke="#ebd300" stroke-width="0.5"/>
+  <rect x="439" y="205" width="44" height="28" fill="#ebd300" opacity="0.3" stroke="#ebd300" stroke-width="0.5"/>
+  <rect x="486" y="205" width="44" height="28" fill="#ebd300" opacity="0.3" stroke="#ebd300" stroke-width="0.5"/>
   
   <!-- 360p segments -->
   <rect x="110" y="245" width="44" height="28" fill="#dc2626" opacity="0.3" stroke="#dc2626" stroke-width="0.5"/>
@@ -128,8 +128,8 @@ mdc: true
   <!-- Active segments (highlighted to show what's being played) -->
   <rect x="110" y="125" width="44" height="28" fill="#10b981" opacity="0.8" stroke="#10b981" stroke-width="1"/>
   <rect x="157" y="165" width="44" height="28" fill="#f59e0b" opacity="0.8" stroke="#f59e0b" stroke-width="1"/>
-  <rect x="204" y="205" width="44" height="28" fill="#ef4444" opacity="0.8" stroke="#ef4444" stroke-width="1"/>
-  <rect x="251" y="205" width="44" height="28" fill="#ef4444" opacity="0.8" stroke="#ef4444" stroke-width="1"/>
+  <rect x="204" y="205" width="44" height="28" fill="#ebd300" opacity="0.8" stroke="#ebd300" stroke-width="1"/>
+  <rect x="251" y="205" width="44" height="28" fill="#ebd300" opacity="0.8" stroke="#ebd300" stroke-width="1"/>
   <rect x="298" y="165" width="44" height="28" fill="#f59e0b" opacity="0.8" stroke="#f59e0b" stroke-width="1"/>
   <rect x="345" y="125" width="44" height="28" fill="#10b981" opacity="0.8" stroke="#10b981" stroke-width="1"/>
   <rect x="392" y="125" width="44" height="28" fill="#10b981" opacity="0.8" stroke="#10b981" stroke-width="1"/>

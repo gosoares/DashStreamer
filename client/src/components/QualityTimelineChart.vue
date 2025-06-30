@@ -42,7 +42,6 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { formatBitrate } from '@/utils/formatters'
 
 export default {
   name: 'QualityTimelineChart',
@@ -59,8 +58,6 @@ export default {
   setup(props) {
     const canvas = ref(null)
     const chartContainer = ref(null)
-    const canvasWidth = ref(800)
-    const canvasHeight = ref(120)
     
     const tooltip = ref({
       visible: false,
@@ -131,9 +128,23 @@ export default {
 
     // Get color for quality level
     function getQualityColor(quality, index, total) {
-      // Use a color scale from red (low) to green (high)
-      const hue = (index / Math.max(total - 1, 1)) * 100 // 0 (red) to 100 (green)
-      return `hsl(${hue}, 70%, 55%)`
+      // Extract height from resolution (e.g., "1920×1080" -> 1080)
+      const height = parseInt(quality.split('×')[1]) || 0
+      
+      // Map resolution heights to specific colors (matching presentation diagram)
+      const colorMap = {
+        2160: '#3b82f6', // 4K - blue
+        1440: '#6366f1', // 1440p - indigo
+        1080: '#10b981', // 1080p - green
+        720: '#f59e0b',  // 720p - amber
+        480: '#ebd300',  // 480p - yellow
+        360: '#dc2626',  // 360p - darker red
+        240: '#9ca3af',  // 240p - gray
+        144: '#6b7280',  // 144p - light gray
+      }
+      
+      // Find the closest matching resolution or use a default
+      return colorMap[height] || '#9ca3af' // Default gray for unknown resolutions
     }
 
     // Format seconds to time string
@@ -148,7 +159,7 @@ export default {
       if (!canvas.value) return
       
       const ctx = canvas.value.getContext('2d')
-      const { width, height } = canvas.value
+      const { width, height } = canvas.value.getBoundingClientRect()
       
       // Clear canvas
       ctx.clearRect(0, 0, width, height)
@@ -163,16 +174,16 @@ export default {
       }
 
       const duration = props.videoDuration || getMaxSegmentTime()
-      const isMobile = window.innerWidth <= 768
-      const padding = isMobile ? 20 : 40
-      const chartWidth = width - padding * 2
-      const chartHeight = height - (isMobile ? 30 : 40)
-      const barHeight = isMobile ? 16 : 20
-      const y = (height - barHeight) / 2
+      const isMobile = width < 768
+      const padding = { top: 5, right: 12, bottom: 20, left: 12 }
+      const chartWidth = width - padding.left - padding.right
+      const chartHeight = height - padding.top - padding.bottom
+      const barHeight = isMobile ? 14 : 18
+      const y = padding.top
 
       // Draw timeline background
       ctx.fillStyle = '#f5f5f5'
-      ctx.fillRect(padding, y, chartWidth, barHeight)
+      ctx.fillRect(padding.left, y, chartWidth, barHeight)
       
       // Draw time markers
       ctx.fillStyle = '#999'
@@ -182,7 +193,7 @@ export default {
       const timeMarkers = Math.min(10, Math.floor(duration / 30)) || 5
       for (let i = 0; i <= timeMarkers; i++) {
         const time = (duration / timeMarkers) * i
-        const x = padding + (chartWidth / timeMarkers) * i
+        const x = padding.left + (chartWidth / timeMarkers) * i
         
         // Draw marker line
         ctx.beginPath()
@@ -209,11 +220,11 @@ export default {
           }
         }
         
-        const startX = padding + (segment.startTimeSeconds / duration) * chartWidth
+        const startX = padding.left + (segment.startTimeSeconds / duration) * chartWidth
         const segmentWidth = Math.max(2, (segmentDuration / duration) * chartWidth)
         
         // Ensure segment doesn't overflow chart bounds
-        const maxX = padding + chartWidth
+        const maxX = padding.left + chartWidth
         const clampedWidth = Math.min(segmentWidth, maxX - startX)
         
         const quality = qualityLevels.value.find(q => q.label === segment.resolution)
@@ -239,7 +250,7 @@ export default {
       // Draw border
       ctx.strokeStyle = '#ddd'
       ctx.lineWidth = 1
-      ctx.strokeRect(padding, y, chartWidth, barHeight)
+      ctx.strokeRect(padding.left, y, chartWidth, barHeight)
     }
 
     function getMaxSegmentTime() {
@@ -285,30 +296,25 @@ export default {
     }
 
     function handleResize() {
-      if (!chartContainer.value) return
-      
-      const containerWidth = chartContainer.value.clientWidth
-      canvasWidth.value = Math.max(300, containerWidth) // Minimum width
-      
-      // Adjust canvas height for mobile devices
-      const isMobile = window.innerWidth <= 768
-      canvasHeight.value = isMobile ? 100 : 120
-      
-      nextTick(() => {
-        if (canvas.value) {
-          // Set actual canvas dimensions for proper scaling
-          const dpr = window.devicePixelRatio || 1
-          const rect = canvas.value.getBoundingClientRect()
-          
-          canvas.value.width = rect.width * dpr
-          canvas.value.height = rect.height * dpr
-          
-          const ctx = canvas.value.getContext('2d')
-          ctx.scale(dpr, dpr)
-          
+      if (!chartContainer.value || !canvas.value) return
+
+      const dpr = window.devicePixelRatio || 1
+      const newWidth = chartContainer.value.clientWidth
+      const newHeight = 60 // Reduced height
+
+      if (newWidth > 0 && newHeight > 0) {
+        canvas.value.width = newWidth * dpr
+        canvas.value.height = newHeight * dpr
+        canvas.value.style.width = `${newWidth}px`
+        canvas.value.style.height = `${newHeight}px`
+
+        const ctx = canvas.value.getContext('2d')
+        ctx.scale(dpr, dpr)
+
+        nextTick(() => {
           drawChart()
-        }
-      })
+        })
+      }
     }
 
     // Watch for changes in segments or duration
@@ -333,8 +339,6 @@ export default {
     return {
       canvas,
       chartContainer,
-      canvasWidth,
-      canvasHeight,
       tooltip,
       qualityLevels,
       handleMouseMove,
@@ -348,7 +352,7 @@ export default {
 .quality-timeline-chart {
   background: white;
   border-radius: 8px;
-  padding: 20px;
+  padding: 16px 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
 }
