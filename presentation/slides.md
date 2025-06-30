@@ -2,7 +2,7 @@
 title: Dash Streamer
 author: Gabriel Soares
 theme: seriph
-background: ./images/background.png
+background: /background.png
 drawings:
   enabled: false
   persist: false
@@ -32,7 +32,7 @@ mdc: true
     <div class="text-3xl mb-4 text-center">🎬</div>
     <h3 class="text-xl font-bold text-blue-700 dark:text-blue-300 mb-4 text-center">Processamento de Video</h3>
     <div class="flex items-center gap-2 mt-2">
-      <img src="/images/python-logo.png" class="w-6 h-6" alt="Python" />
+      <img src="/python-logo.png" class="w-6 h-6" alt="Python" />
       <span class="text-sm text-blue-600 dark:text-blue-400 font-medium">Python</span>
     </div>
   </div>
@@ -55,7 +55,7 @@ mdc: true
     <div class="text-3xl mb-4 text-center">🖥️</div>
     <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-4 text-center">Servidor de Conteúdo</h3>
     <div class="flex items-center gap-2 mt-2">
-      <img src="/images/flask-logo.svg" class="w-6 h-6" alt="Flask" />
+      <img src="/flask-logo.svg" class="w-6 h-6" alt="Flask" />
       <span class="text-sm text-green-600 dark:text-green-400 font-medium">Flask</span>
     </div>
   </div>
@@ -75,7 +75,7 @@ mdc: true
     <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4 text-center">Frontend</h3>
     </div>
     <div class="flex items-center gap-2 mt-2">
-      <img src="/images/vuejs-logo.svg" class="w-6 h-6" alt="Vue.js" />
+      <img src="/vuejs-logo.svg" class="w-6 h-6" alt="Vue.js" />
       <span class="text-sm text-purple-600 dark:text-purple-400 font-medium">Vue.js</span>
     </div>
   </div>
@@ -213,7 +213,7 @@ flowchart TD
 
 ##### Ferramentas utilizadas:
 <div class="flex items-start gap-3 text-sm">
-<img src="/images/ffmpeg-logo.svg" class="w-12 h-12" />
+<img src="/ffmpeg-logo.svg" class="w-12 h-12" />
 <div class="text-sm">
 <div class="mb-1"><strong>FFprobe</strong> - Análise de streams</div>
 <div><strong>FFmpeg</strong> - Limpeza e preprocessamento</div>
@@ -226,7 +226,7 @@ flowchart TD
 
   <div class="flex items-center gap-4 mb-4">
   <div class="bg-gray-100 dark:bg-gray-800 p-2 rounded" style="width: 176px; height: 99px;">
-  <img src="/images/cats_video_rotated.jpg" class="w-full h-full object-cover" />
+  <img src="/cats_video_rotated.jpg" class="w-full h-full object-cover" />
   </div>
   <div class="text-xs">
   <strong>🎥 Codificado</strong> - 1920×1080<br/>
@@ -236,7 +236,7 @@ flowchart TD
 
   <div class="flex items-center gap-4 mb-4">
   <div class="bg-gray-100 dark:bg-gray-800 p-2 rounded" style="width: 99px; height: 176px;">
-  <img src="/images/cats_video.jpg" class="w-full h-full object-cover" />
+  <img src="/cats_video.jpg" class="w-full h-full object-cover" />
   </div>
   <div class="text-xs">
   <strong>✅ Correto</strong> - 1080×1920<br/>
@@ -246,7 +246,7 @@ flowchart TD
 
   <div class="flex items-center gap-4">
   <div class="bg-gray-100 dark:bg-gray-800 p-2 rounded" style="width: 176px; height: 99px;">
-  <img src="/images/cats_video.jpg" class="w-full h-full object-fill" />
+  <img src="/cats_video.jpg" class="w-full h-full object-fill" />
   </div>
   <div class="text-xs">
   <strong>❌ Antes</strong> - 1920x1080<br/>
@@ -303,7 +303,7 @@ flowchart TD
 
 ##### Lib utilizada:
 <div class="flex items-center gap-1 text-sm mb-4">
-<img src="/images/quasar-logo.png" class="w-8 h-8" />
+<img src="/quasar-logo.png" class="w-8 h-8" />
 <div class="text-sm">python_ffmpeg_video_streaming</div>
 </div>
 
@@ -388,7 +388,7 @@ Segmentos de 4 segundos
 # Servidor
 
 <div class="absolute top-10 right-16 flex items-center gap-3">
-<img src="/images/flask-logo.svg" class="w-8 h-8" alt="Flask" />
+<img src="/flask-logo.svg" class="w-8 h-8" alt="Flask" />
 <span class="text-lg font-medium text-gray-600 dark:text-gray-400">Flask</span>
 </div>
 
