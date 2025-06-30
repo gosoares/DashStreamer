@@ -220,7 +220,7 @@ mdc: true
 
 ---
 
-# Pipeline de Processamento
+# Pipeline de Processamento de Vídeo
 
 <div class="light:block dark:hidden">
 
@@ -258,7 +258,7 @@ flowchart LR
 
 </div>
 
-<div class="mt-8 grid grid-cols-2 gap-8 text-sm">
+<div class="grid grid-cols-2 gap-8 text-sm">
 
 <div>
 
@@ -266,28 +266,31 @@ flowchart LR
 
 - Detecção de streams (vídeo/áudio/metadata)
 - Propriedades físicas vs. exibição
-- Rotação e aspect ratio
+- Aspect Ratio
+- Rotação
 
 **🧹 Preprocessamento**
 
 - Limpeza streams problemáticos (mebx)
 - Preservação metadados essenciais
-- Stream copy para performance
 
 </div>
 
 <div>
 
+**🖼️ Thumbnail**
+
+- Tirada do segundo 1
+- Formato JPEG
+
 **⚙️ Representações**
 
-- Ladders adaptativos (portrait/landscape)
-- Dimensões pares para codecs
+- Múltiplas resoluções
 - Bitrates otimizados por qualidade
 
 **📦 Segmentação DASH**
 
-- H.264, segmentos 4s
-- Conflict handling para rotações
+- Segmentos de 4s
 - MPD + init/chunk segments
 
 </div>
