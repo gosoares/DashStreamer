@@ -22,7 +22,9 @@
 
 ## Overview
 
-DashStreamer is a full-stack web application for uploading, processing, and streaming videos using MPEG-DASH. It features a Flask backend for video processing and API, and a Vue.js frontend for a modern, user-friendly interface.
+DashStreamer is a full-stack web application for uploading, processing, and streaming videos using MPEG-DASH. This project was developed as a **master's degree final project** for the course "Sistemas Gráficos e Multimídia" (Graphics and Multimedia Systems) taught by Prof. Tiago Maritan.
+
+The application features a Flask backend for video processing and API, a Vue.js frontend for a modern user interface, and includes an academic presentation built with Slidev to showcase the technical implementation and achievements.
 
 ---
 
@@ -50,6 +52,12 @@ DashStreamer is a full-stack web application for uploading, processing, and stre
 - Axios
 - dash.js (MPEG-DASH player)
 - Modern CSS (no Tailwind)
+
+**Presentation:**
+
+- Slidev (Vue-based presentation framework)
+- Markdown-driven slides
+- Interactive web presentation
 
 ---
 
@@ -94,91 +102,84 @@ The video processing pipeline provides comprehensive support for all video forma
 
 #### Phase 1: Upload & Initialization
 1. **Video Upload:** User uploads video file and title via `/videos` endpoint
-2. **UUID Generation:** Each video gets a unique identifier and dedicated storage folder
-3. **Initial Metadata:** Basic `meta.json` created with status "pending"
+2. **Folder Creation:** Creates snake_case folder name from title with uniqueness guarantee
+3. **File Storage:** Saves original file and creates initial `meta.json` with "pending" status
 4. **Background Thread:** Processing starts asynchronously to prevent client timeouts
 
-#### Phase 2: Preprocessing & Analysis
-1. **Metadata Stream Detection:**
-   - Uses `ffprobe` to analyze all streams in the video file
-   - Detects problematic metadata streams (especially iPhone/iOS videos with `mebx` data streams)
+#### Phase 2: Video Analysis & Preprocessing
+1. **Stream Analysis:**
+   - Uses `ffprobe` to analyze all streams and metadata in the video file
+   - Detects problematic metadata streams (iPhone/iOS videos with `mebx` data streams)
    - Identifies rotation metadata from Display Matrix side data
 
-2. **Video Property Analysis:**
-   - Extracts physical dimensions (width × height as stored in file)
-   - Detects rotation metadata (-90°, 90°, 180°, etc.)
-   - Calculates display dimensions (accounting for rotation)
-   - Determines correct aspect ratio for display (e.g., 9:16 for portrait)
+2. **Video Property Extraction:**
+   - Physical dimensions (width × height as stored in file)
+   - Rotation metadata (-90°, 90°, 180°, etc.)
+   - Display dimensions (accounting for rotation)
+   - Aspect ratio calculation for proper display (e.g., 9:16 for portrait)
 
-3. **Preprocessing (if needed):**
-   - **iPhone/iOS Video Cleaning:** Removes problematic metadata streams while preserving video/audio
-   - **Metadata Preservation:** Uses `-map_metadata 0` and `-movflags use_metadata_tags` to preserve rotation data
-   - **Stream Copy:** Uses `-c copy` for fast processing without re-encoding
-   - **Debug Mode:** Optionally saves preprocessed files for debugging
+3. **Smart Preprocessing (when needed):**
+   - **Metadata Stream Cleaning:** Removes problematic `mebx` data streams from iPhone/iOS videos
+   - **Stream Preservation:** Maps only video/audio streams using `-map 0:v:0 -map 0:a:0`
+   - **Stream Copy Optimization:** Uses `-c copy` for fast processing without re-encoding
+   - **Metadata Preservation:** Maintains rotation data with `-map_metadata 0` and `-movflags use_metadata_tags`
+   - **Debug Files:** Optionally saves preprocessed files as `debug_preprocessed_*`
 
-#### Phase 3: Quality Ladder Generation
-1. **Adaptive Approach by Orientation:**
-   - **Portrait Videos (AR < 1):** Uses target widths (1080p, 720p, 540p, 360p) and calculates heights
-   - **Landscape Videos (AR ≥ 1):** Uses target heights and calculates widths
-   - **Maintains exact aspect ratio** for all representations
+#### Phase 3: Adaptive Quality Ladder Generation
+1. **Orientation-Based Approach:**
+   - **Portrait Videos (height > width):** Uses target widths [2160, 1440, 1080, 720, 480, 360, 240, 144] and calculates heights
+   - **Landscape Videos (width ≥ height):** Uses target heights and calculates widths
+   - **Aspect Ratio Preservation:** Maintains exact source aspect ratio for all representations
 
-2. **Quality Levels Generated:**
-   - **Portrait Example:** 1080×1920, 720×1280, 540×960, 360×640
-   - **Landscape Example:** 1920×1080, 1280×720, 960×540, 640×360
-   - **Even Dimension Enforcement:** Ensures width/height are even numbers for codec compatibility
+2. **Quality Level Examples:**
+   - **Portrait (9:16):** 1080×1920, 720×1280, 540×960, 360×640
+   - **Landscape (16:9):** 1920×1080, 1280×720, 960×540, 640×360
+   - **Even Dimension Enforcement:** Adjusts width/height to even numbers for codec compatibility
 
-3. **Bitrate Calculation:**
-   - **Video Bitrates:** Optimized per resolution (3000k for 1080p, 1500k for 720p, etc.)
-   - **Audio Bitrates:** 128kbps for HD quality, 96kbps for lower resolutions
-   - **Library Compatibility:** Values multiplied by 1000 for ffmpeg-streaming library
+3. **Bitrate Optimization:**
+   - **Video Bitrates:** Mapped by quality level (35840k for 2160p down to 340k for 144p)
+   - **Audio Bitrates:** Optimized per resolution (320k for HD, 128k for SD, 64k for lowest)
+   - **Library Scaling:** Values multiplied by 1024 for ffmpeg-streaming compatibility
 
-#### Phase 4: DASH Conversion
-1. **DASH Stream Creation:**
-   - Uses `python-ffmpeg-video-streaming` library for DASH packaging
-   - **H.264 codec** with optimized settings for web streaming
-   - **Adaptive streaming** with multiple quality representations
+#### Phase 4: DASH Stream Creation
+1. **DASH Configuration:**
+   - Uses `python-ffmpeg-video-streaming` library with H.264 codec
+   - 4-second segment duration with template-based naming
+   - Forced keyframes for optimal seeking: `init_$RepresentationID$.m4s`, `chunk_$RepresentationID$_$Number%03d$.m4s`
 
-2. **Error Handling for Portrait Videos:**
-   - **Conflict Detection:** Monitors for "Conflicting stream aspect ratios" errors
-   - **Limited Representations:** Uses fewer quality levels for rotated videos if needed
-   - **Detailed Logging:** Records exact aspect ratios and error details
+2. **Rotation Conflict Handling:**
+   - **Detection:** Monitors for "Conflicting stream aspect ratios" errors in rotated videos
+   - **Fallback:** Uses limited representations (top 2 quality levels) for rotated videos
+   - **Detailed Logging:** Records aspect ratios and representation details for debugging
 
-3. **Segment Generation:**
-   - **Initialization Segments:** `video_init_*.m4s` files for each quality level
-   - **Media Segments:** `video_chunk_*_*.m4s` files containing actual video data
+3. **Output Generation:**
    - **Manifest File:** `video.mpd` describing all available representations
+   - **Initialization Segments:** Per-quality init files with codec information
+   - **Media Segments:** Chunked video/audio data for adaptive streaming
 
-#### Phase 5: Thumbnail & Finalization
+#### Phase 5: Thumbnail Creation & Finalization
 1. **Thumbnail Extraction:**
-   - Extracted at 1-second mark using `ffmpeg`
+   - Extracted at 1-second mark using `ffmpeg -ss 00:00:01 -vframes 1`
    - Saved as `thumbnail.jpg` in video folder
-   - Handles any video format and orientation
+   - Handles all video formats and orientations
 
-2. **Status Updates:**
-   - **Real-time logging** in `processing.log` with detailed steps
-   - **Metadata updates** in `meta.json` with final status
-   - **File inventory** listing all generated files
+2. **Debug Mode Features:**
+   - **Debug MP4:** Creates `debug_converted.mp4` with same preprocessing pipeline
+   - **File Preservation:** Saves `debug_preprocessed_*` files for inspection
+   - **Enhanced Logging:** Detailed processing steps and file inventory
 
-3. **Cleanup:**
-   - **Temporary files** removed automatically
-   - **Debug files** preserved if debug mode enabled
-   - **Error logging** for any cleanup failures
+3. **Cleanup & Status Update:**
+   - **Temporary File Cleanup:** Removes processing artifacts (preserves debug files)
+   - **Status Finalization:** Updates `meta.json` to "done" or "error"
+   - **Comprehensive Logging:** Records all processing details in `processing.log`
 
-#### Debug Mode Features
+#### Advanced Features
 
-When `DEBUG_VIDEO_PROCESSING=true`:
-- **Preprocessed files** saved as `debug_preprocessed_*`
-- **Debug MP4** created as `debug_converted.mp4` for testing
-- **Enhanced logging** with detailed processing steps
-- **File preservation** for troubleshooting
-
-#### Supported Features
-
-- **Universal Aspect Ratios:** 16:9, 4:3, 21:9, 9:16, 1:1, and any custom ratio
-- **Portrait Video Support:** Proper handling of rotated mobile videos
-- **iPhone Video Compatibility:** Automatic metadata stream cleaning
-- **Error Recovery:** Graceful fallback if preprocessing fails
-- **Comprehensive Logging:** Detailed processing information for debugging
+- **Universal Format Support:** Handles .mov, .mp4, .mkv with any aspect ratio
+- **Intelligent Preprocessing:** Automatic detection and cleaning of problematic formats
+- **Metadata Preservation:** Maintains rotation and essential video metadata
+- **Error Recovery:** Graceful fallback when preprocessing fails
+- **Performance Optimization:** Stream copying when possible, minimal re-encoding
 
 ### File Structure
 
@@ -302,6 +303,29 @@ The PlayerView includes comprehensive streaming analytics with real-time visuali
    ```
 
 3. Access the client at [http://localhost:5173](http://localhost:5173).
+
+### Presentation
+
+1. Install dependencies:
+
+   ```
+   cd presentation
+   pnpm install
+   ```
+
+2. Start the presentation server:
+
+   ```
+   pnpm dev
+   ```
+
+3. Access the presentation at [http://localhost:3030](http://localhost:3030).
+
+4. Export to PDF:
+
+   ```
+   pnpm export
+   ```
 
 ### Debug Mode
 
