@@ -537,7 +537,36 @@ Segmentos de 4 segundos
 | **GET** | `/videos` | Lista de vídeos |
 | **GET** | `/videos/<id>/info.json` | Metadados do vídeo |
 | **GET** | `/videos/<id>/manifest.mpd` | Manifesto DASH |
+| **GET** | `/videos/<id>/thumbnail.jpg` | Thumbnail do vídeo |
 | **GET** | `/videos/<id>/<file>` | Segmentos |
 
 </div>
 
+---
+
+# Cliente
+
+<div class="absolute top-10 right-16 flex items-center gap-3">
+<img src="/vuejs-logo.svg" class="w-8 h-8" alt="Vue.js" />
+<span class="text-lg font-medium text-green-600 dark:text-green-400">Vue.js</span>
+</div>
+
+<div class="flex flex-row gap-6 items-center justify-center" style="width:100%;">
+  <img src="/client_homepage.png" alt="Homepage" style="max-width:35vw; max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
+  <img src="/client_upload.png" alt="Upload Page" style="max-width:35vw; max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
+</div>
+
+---
+
+# Cliente
+
+<div class="absolute top-10 right-16 flex items-center gap-3">
+<img src="/vuejs-logo.svg" class="w-8 h-8" alt="Vue.js" />
+<span class="text-lg font-medium text-green-600 dark:text-green-400">Vue.js</span>
+</div>
+
+
+<div class="flex flex-row gap-6 items-center justify-center" style="width:100%;">
+  <img src="/client_player.png" alt="Player Page" style="max-width:36vw; max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
+  <img src="/client_player_bottom.png" alt="Player Page Bottom" style="max-width:36vw; max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
+</div>
