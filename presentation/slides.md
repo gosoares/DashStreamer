@@ -28,12 +28,12 @@ mdc: true
 # Módulos
 
 <div class="flex justify-center w-auto mx-auto mt-20">
-  <div class="bg-blue-50 dark:bg-blue-900/30 p-6 rounded-xl shadow-lg border border-blue-200 dark:border-blue-700 w-64 flex items-center flex-col justify-between">
+  <div class="bg-yellow-50 dark:bg-yellow-900/30 p-6 rounded-xl shadow-lg border border-yellow-400 dark:border-yellow-500 w-64 flex items-center flex-col justify-between">
     <div class="text-3xl mb-4 text-center">🎬</div>
-    <h3 class="text-xl font-bold text-blue-700 dark:text-blue-300 mb-4 text-center">Processamento de Video</h3>
+    <h3 class="text-xl font-bold text-yellow-800 dark:text-yellow-200 mb-4 text-center">Processamento de Video</h3>
     <div class="flex items-center gap-2 mt-2">
       <img src="/python-logo.png" class="w-6 h-6" alt="Python" />
-      <span class="text-sm text-blue-600 dark:text-blue-400 font-medium">Python</span>
+      <span class="text-sm text-yellow-700 dark:text-yellow-300 font-medium">Python</span>
     </div>
   </div>
 
@@ -51,12 +51,12 @@ mdc: true
   <text x="60" y="150" text-anchor="middle" class="text-xs fill-gray-400 font-normal">Arquivos Dash</text>
   </svg>
 
-  <div class="bg-green-50 dark:bg-green-900/30 p-6 rounded-xl shadow-lg border border-green-200 dark:border-green-700 w-64 flex items-center flex-col justify-between">
+  <div class="bg-blue-50 dark:bg-blue-900/30 p-6 rounded-xl shadow-lg border border-blue-400 dark:border-blue-500 w-64 flex items-center flex-col justify-between">
     <div class="text-3xl mb-4 text-center">🖥️</div>
-    <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-4 text-center">Servidor de Conteúdo</h3>
+    <h3 class="text-xl font-bold text-blue-800 dark:text-blue-200 mb-4 text-center">Servidor de Conteúdo</h3>
     <div class="flex items-center gap-2 mt-2">
       <img src="/flask-logo.svg" class="w-6 h-6" alt="Flask" />
-      <span class="text-sm text-green-600 dark:text-green-400 font-medium">Flask</span>
+      <span class="text-sm text-blue-700 dark:text-blue-300 font-medium">Flask</span>
     </div>
   </div>
 
@@ -69,14 +69,14 @@ mdc: true
   <text x="60" y="150" text-anchor="middle" class="text-xs fill-gray-400 font-normal">Video Streaming</text>
   </svg>
 
-  <div class="bg-purple-50 dark:bg-purple-900/30 p-6 rounded-xl shadow-lg border border-purple-200 dark:border-purple-700 w-64 flex items-center flex-col justify-between">
+  <div class="bg-green-50 dark:bg-green-900/30 p-6 rounded-xl shadow-lg border border-green-400 dark:border-green-500 w-64 flex items-center flex-col justify-between">
     <div>
     <div class="text-3xl mb-4 text-center">💻</div>
-    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4 text-center">Frontend</h3>
+    <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-4 text-center">Cliente</h3>
     </div>
     <div class="flex items-center gap-2 mt-2">
       <img src="/vuejs-logo.svg" class="w-6 h-6" alt="Vue.js" />
-      <span class="text-sm text-purple-600 dark:text-purple-400 font-medium">Vue.js</span>
+      <span class="text-sm text-green-600 dark:text-green-400 font-medium">Vue.js</span>
     </div>
   </div>
 </div>
