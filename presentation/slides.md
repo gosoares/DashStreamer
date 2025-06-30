@@ -25,6 +25,143 @@ mdc: true
 
 ---
 
+# **D**ynamic **A**daptive **S**treaming over **H**TTP
+
+<div class="grid grid-cols-[1fr_2fr] gap-4">
+
+<div>
+
+<div class="bg-blue-50 dark:bg-blue-900/30 px-4 pt-1 pb-4 rounded-lg">
+
+**🎯 Conceitos Principais:**
+
+- **Segmentação**: Vídeo dividido em pequenos segmentos (2-10s)
+- **Múltiplas Qualidades**: Cada segmento em diferentes resoluções/bitrates
+- **Adaptação Dinâmica**: Player ajusta qualidade automaticamente de acordo com a largura de banda
+
+</div>
+
+</div>
+
+<div>
+
+<div class="py-3 rounded-lg">
+
+<h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200 text-center">Adaptação Dinâmica de Qualidade</h4>
+
+<svg height="300" viewBox="0 0 560 300">
+  <!-- Quality level labels with bitrates -->
+  <text x="15" y="65" class="text-xs fill-gray-700 dark:fill-gray-300 font-medium" >2160p (35 Mbps)</text>
+  <text x="15" y="105" class="text-xs fill-gray-700 dark:fill-gray-300 font-medium">1440p (16 Mbps)</text>
+  <text x="15" y="145" class="text-xs fill-gray-700 dark:fill-gray-300 font-medium">1080p (8 Mbps)</text>
+  <text x="15" y="185" class="text-xs fill-gray-700 dark:fill-gray-300 font-medium"> 720p (5 Mbps)</text>
+  <text x="15" y="225" class="text-xs fill-gray-700 dark:fill-gray-300 font-medium"> 480p (2.5 Mbps)</text>
+  <text x="15" y="265" class="text-xs fill-gray-700 dark:fill-gray-300 font-medium">  360p (1 Mbps)</text>
+  
+  <!-- Segment grid (9 segments x 6 quality levels) -->
+  <!-- 4K segments -->
+  <rect x="110" y="45" width="44" height="28" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="0.5"/>
+  <rect x="157" y="45" width="44" height="28" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="0.5"/>
+  <rect x="204" y="45" width="44" height="28" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="0.5"/>
+  <rect x="251" y="45" width="44" height="28" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="0.5"/>
+  <rect x="298" y="45" width="44" height="28" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="0.5"/>
+  <rect x="345" y="45" width="44" height="28" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="0.5"/>
+  <rect x="392" y="45" width="44" height="28" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="0.5"/>
+  <rect x="439" y="45" width="44" height="28" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="0.5"/>
+  <rect x="486" y="45" width="44" height="28" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="0.5"/>
+  
+  <!-- 1440p segments -->
+  <rect x="110" y="85" width="44" height="28" fill="#6366f1" opacity="0.3" stroke="#6366f1" stroke-width="0.5"/>
+  <rect x="157" y="85" width="44" height="28" fill="#6366f1" opacity="0.3" stroke="#6366f1" stroke-width="0.5"/>
+  <rect x="204" y="85" width="44" height="28" fill="#6366f1" opacity="0.3" stroke="#6366f1" stroke-width="0.5"/>
+  <rect x="251" y="85" width="44" height="28" fill="#6366f1" opacity="0.3" stroke="#6366f1" stroke-width="0.5"/>
+  <rect x="298" y="85" width="44" height="28" fill="#6366f1" opacity="0.3" stroke="#6366f1" stroke-width="0.5"/>
+  <rect x="345" y="85" width="44" height="28" fill="#6366f1" opacity="0.3" stroke="#6366f1" stroke-width="0.5"/>
+  <rect x="392" y="85" width="44" height="28" fill="#6366f1" opacity="0.3" stroke="#6366f1" stroke-width="0.5"/>
+  <rect x="439" y="85" width="44" height="28" fill="#6366f1" opacity="0.3" stroke="#6366f1" stroke-width="0.5"/>
+  <rect x="486" y="85" width="44" height="28" fill="#6366f1" opacity="0.3" stroke="#6366f1" stroke-width="0.5"/>
+  
+  <!-- 1080p segments -->
+  <rect x="110" y="125" width="44" height="28" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="0.5"/>
+  <rect x="157" y="125" width="44" height="28" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="0.5"/>
+  <rect x="204" y="125" width="44" height="28" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="0.5"/>
+  <rect x="251" y="125" width="44" height="28" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="0.5"/>
+  <rect x="298" y="125" width="44" height="28" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="0.5"/>
+  <rect x="345" y="125" width="44" height="28" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="0.5"/>
+  <rect x="392" y="125" width="44" height="28" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="0.5"/>
+  <rect x="439" y="125" width="44" height="28" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="0.5"/>
+  <rect x="486" y="125" width="44" height="28" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="0.5"/>
+  
+  <!-- 720p segments -->
+  <rect x="110" y="165" width="44" height="28" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="0.5"/>
+  <rect x="157" y="165" width="44" height="28" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="0.5"/>
+  <rect x="204" y="165" width="44" height="28" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="0.5"/>
+  <rect x="251" y="165" width="44" height="28" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="0.5"/>
+  <rect x="298" y="165" width="44" height="28" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="0.5"/>
+  <rect x="345" y="165" width="44" height="28" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="0.5"/>
+  <rect x="392" y="165" width="44" height="28" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="0.5"/>
+  <rect x="439" y="165" width="44" height="28" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="0.5"/>
+  <rect x="486" y="165" width="44" height="28" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="0.5"/>
+  
+  <!-- 480p segments -->
+  <rect x="110" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
+  <rect x="157" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
+  <rect x="204" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
+  <rect x="251" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
+  <rect x="298" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
+  <rect x="345" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
+  <rect x="392" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
+  <rect x="439" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
+  <rect x="486" y="205" width="44" height="28" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="0.5"/>
+  
+  <!-- 360p segments -->
+  <rect x="110" y="245" width="44" height="28" fill="#dc2626" opacity="0.3" stroke="#dc2626" stroke-width="0.5"/>
+  <rect x="157" y="245" width="44" height="28" fill="#dc2626" opacity="0.3" stroke="#dc2626" stroke-width="0.5"/>
+  <rect x="204" y="245" width="44" height="28" fill="#dc2626" opacity="0.3" stroke="#dc2626" stroke-width="0.5"/>
+  <rect x="251" y="245" width="44" height="28" fill="#dc2626" opacity="0.3" stroke="#dc2626" stroke-width="0.5"/>
+  <rect x="298" y="245" width="44" height="28" fill="#dc2626" opacity="0.3" stroke="#dc2626" stroke-width="0.5"/>
+  <rect x="345" y="245" width="44" height="28" fill="#dc2626" opacity="0.3" stroke="#dc2626" stroke-width="0.5"/>
+  <rect x="392" y="245" width="44" height="28" fill="#dc2626" opacity="0.3" stroke="#dc2626" stroke-width="0.5"/>
+  <rect x="439" y="245" width="44" height="28" fill="#dc2626" opacity="0.3" stroke="#dc2626" stroke-width="0.5"/>
+  <rect x="486" y="245" width="44" height="28" fill="#dc2626" opacity="0.3" stroke="#dc2626" stroke-width="0.5"/>
+  
+  <!-- Active segments (highlighted to show what's being played) -->
+  <rect x="110" y="125" width="44" height="28" fill="#10b981" opacity="0.8" stroke="#10b981" stroke-width="1"/>
+  <rect x="157" y="165" width="44" height="28" fill="#f59e0b" opacity="0.8" stroke="#f59e0b" stroke-width="1"/>
+  <rect x="204" y="205" width="44" height="28" fill="#ef4444" opacity="0.8" stroke="#ef4444" stroke-width="1"/>
+  <rect x="251" y="205" width="44" height="28" fill="#ef4444" opacity="0.8" stroke="#ef4444" stroke-width="1"/>
+  <rect x="298" y="165" width="44" height="28" fill="#f59e0b" opacity="0.8" stroke="#f59e0b" stroke-width="1"/>
+  <rect x="345" y="125" width="44" height="28" fill="#10b981" opacity="0.8" stroke="#10b981" stroke-width="1"/>
+  <rect x="392" y="125" width="44" height="28" fill="#10b981" opacity="0.8" stroke="#10b981" stroke-width="1"/>
+  <rect x="439" y="85" width="44" height="28" fill="#6366f1" opacity="0.8" stroke="#6366f1" stroke-width="1"/>
+  <rect x="486" y="45" width="44" height="28" fill="#3b82f6" opacity="0.8" stroke="#3b82f6" stroke-width="1"/>
+  
+  <!-- Adaptation path (smooth curve showing quality played over time) -->
+  <path d="M 132 139 Q 170 150 179 179 Q 220 219 243 219 Q 265 219 320 179 Q 350 139 414 139 Q 440 139 461 99 Q 480 59 508 59" 
+        stroke="#374151" stroke-width="3" fill="none" opacity="1" class="stroke-gray-700 dark:stroke-gray-300"/>
+  
+  <!-- Timeline -->
+  <line x1="110" y1="285" x2="530" y2="285" stroke="#9ca3af" stroke-width="1"/>
+  <text x="132" y="300" class="text-xs fill-gray-600 dark:fill-gray-400 text-anchor-middle">6s</text>
+  <text x="179" y="300" class="text-xs fill-gray-600 dark:fill-gray-400 text-anchor-middle">12s</text>
+  <text x="226" y="300" class="text-xs fill-gray-600 dark:fill-gray-400 text-anchor-middle">18s</text>
+  <text x="273" y="300" class="text-xs fill-gray-600 dark:fill-gray-400 text-anchor-middle">24s</text>
+  <text x="320" y="300" class="text-xs fill-gray-600 dark:fill-gray-400 text-anchor-middle">30s</text>
+  <text x="367" y="300" class="text-xs fill-gray-600 dark:fill-gray-400 text-anchor-middle">36s</text>
+  <text x="414" y="300" class="text-xs fill-gray-600 dark:fill-gray-400 text-anchor-middle">42s</text>
+  <text x="461" y="300" class="text-xs fill-gray-600 dark:fill-gray-400 text-anchor-middle">48s</text>
+  <text x="508" y="300" class="text-xs fill-gray-600 dark:fill-gray-400 text-anchor-middle">54s</text>
+</svg>
+
+</div>
+
+
+</div>
+
+</div>
+
+---
+
 # Módulos
 
 <div class="flex justify-center w-auto mx-auto mt-20">
