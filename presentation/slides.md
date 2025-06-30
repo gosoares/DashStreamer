@@ -2,7 +2,7 @@
 title: Dash Streamer
 author: Gabriel Soares
 theme: seriph
-background: /images/background.png
+background: ./images/background.png
 drawings:
   enabled: false
   persist: false
