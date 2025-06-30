@@ -385,12 +385,11 @@ Segmentos de 4 segundos
 
 ---
 
-<div class="flex justify-between items-center mb-6">
-<h1>Servidor</h1>
-<div class="flex items-center gap-3">
+# Servidor
+
+<div class="absolute top-10 right-16 flex items-center gap-3">
 <img src="/images/flask-logo.svg" class="w-8 h-8" alt="Flask" />
 <span class="text-lg font-medium text-gray-600 dark:text-gray-400">Flask</span>
-</div>
 </div>
 
 <div class="bg-gray-50 p-2 rounded-lg">
