@@ -555,8 +555,8 @@ Segmentos de 4 segundos
 </div>
 
 <div class="flex flex-row gap-6 items-center justify-center" style="width:100%;">
-  <img src="/client_homepage.png" alt="Homepage" style="max-width:35vw; max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
-  <img src="/client_upload.png" alt="Upload Page" style="max-width:35vw; max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
+  <img src="/client_homepage.png" alt="Homepage" style="max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
+  <img src="/client_upload.png" alt="Upload Page" style="max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
 </div>
 
 ---
@@ -570,8 +570,8 @@ Segmentos de 4 segundos
 
 
 <div class="flex flex-row gap-6 items-center justify-center" style="width:100%;">
-  <img src="/client_player.png" alt="Player Page" style="max-width:36vw; max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
-  <img src="/client_player_bottom.png" alt="Player Page Bottom" style="max-width:36vw; max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
+  <img src="/client_player.png" alt="Player Page" style="max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
+  <img src="/client_player_bottom.png" alt="Player Page Bottom" style="max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
 </div>
 
 ---
