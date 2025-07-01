@@ -13,23 +13,40 @@ image: "/cover-image.png"
 
 <div class="flex flex-col justify-center h-full">
 
-<div class="space-y-12">
-  <h1 class="text-7xl font-bold text-gray-800 dark:text-white leading-tight">
-    Dash Streamer
-  </h1>
+<div class="space-y-8">
+  <div class="text-7xl font-bold text-gray-800 dark:text-white leading-tight">
+    
+# Dash Streamer
+    
+  </div>
   
   <div class="text-3xl font-light text-gray-600 dark:text-gray-300">
-    Gabriel Soares
+  
+## Gabriel Soares
+    
   </div>
 </div>
 
-<div class="mt-20">
-  <div class="text-l text-gray-500 dark:text-gray-400">
-    <span class="font-bold">Disciplina:</span> Sistemas Gráficos e Multimídia
+<div class="mt-16">
+  <div class="text-lg text-gray-500 dark:text-gray-400">
+  
+##### **Disciplina:** Sistemas Gráficos e Multimídia
   </div>
-  <div class="text-l text-gray-500 dark:text-gray-400">
-    <span class="font-bold">Prof.:</span> Tiago Maritan
+  <div class="text-lg text-gray-500 dark:text-gray-400">
+
+##### **Prof.:** Tiago Maritan
   </div>
+  
+  
+</div>
+
+<div class="mt-6 pt-4 border-gray-200 dark:border-gray-700 justify-center items-center ">
+  <span onclick="window.open('https://github.com/gosoares/DashStreamer', '_blank')" class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm font-medium cursor-pointer">
+    <span class="flex items-center">
+      <img src="/github-logo.svg" class="w-4 h-4" alt="GitHub" />
+    </span>
+    <span class="flex items-center pb-1">gosoares/DashStreamer</span>
+  </span>
 </div>
 
 </div>
