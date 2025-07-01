@@ -578,7 +578,7 @@ layout: two-cols-header
 # Demonstração
 
 <div class="flex justify-center">
-  <SlidevVideo 
+  <video 
     src="/demo.mp4" 
     poster="/demo-poster.jpg"
     controls 
