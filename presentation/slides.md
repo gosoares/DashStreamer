@@ -490,30 +490,30 @@ video_folder/
 
 <div class="mpd-example">
 
-```xml
+```xml {all|1,25|2,16,18,24|3-4,8-10,14|5-7|all}
 <MPD mediaPresentationDuration="PT2M34.0S">
   <AdaptationSet id="0" contentType="video">
     <Representation id="0" bandwidth="16384000"
-                    width="2560" height="1440">
-				<SegmentTemplate duration="4000000"
-              initialization="init_$RepresentationID$.m4s"
-              media="chunk_$RepresentationID$_$Number%03d$.m4s" />
-			</Representation>
-      <Representation id="1" bandwidth="8192000"
-                    width="1920" height="1080">
-				<SegmentTemplate duration="4000000"
-              initialization="init_$RepresentationID$.m4s"
-              media="chunk_$RepresentationID$_$Number%03d$.m4s" />
-			</Representation>
+                  width="2560" height="1440">
+      <SegmentTemplate duration="4000000"
+            initialization="init_$RepresentationID$.m4s"
+            media="chunk_$RepresentationID$_$Number%03d$.m4s" />
+    </Representation>
+    <Representation id="1" bandwidth="8192000"
+                  width="1920" height="1080">
+      <SegmentTemplate duration="4000000"
+            initialization="init_$RepresentationID$.m4s"
+            media="chunk_$RepresentationID$_$Number%03d$.m4s" />
+    </Representation>
       ...
   </AdaptationSet>
 
   <AdaptationSet id="1" contentType="audio">
-			<Representation id="2" bandwidth="128000">
-				<SegmentTemplate duration="4000000"
-                initialization="init_$RepresentationID$.m4s"
-                media="chunk_$RepresentationID$_$Number%03d$.m4s" />
-			</Representation>
+    <Representation id="2" bandwidth="128000">
+      <SegmentTemplate duration="4000000"
+              initialization="init_$RepresentationID$.m4s"
+              media="chunk_$RepresentationID$_$Number%03d$.m4s" />
+    </Representation>
   </AdaptationSet>
 </MPD>
 ```
