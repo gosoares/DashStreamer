@@ -582,8 +582,8 @@ layout: two-cols-header
     src="/demo.mp4" 
     poster="/demo-poster.jpg"
     controls 
-    style="max-height: 430px; object-fit: contain;"
-    class="border-2 border-gray-200 dark:border-gray-700 rounded-sm shadow-lg" />
+    style="width: 100%; height: 430px; object-fit: contain;"
+    class="border-2 border-gray-200 dark:border-gray-700 rounded-md shadow-lg" />
 </div>
 
 ---
