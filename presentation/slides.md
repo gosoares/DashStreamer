@@ -584,19 +584,19 @@ Segmentos de 4 segundos
 # Demonstração
 
 <div class="flex justify-center">
-  <video 
+  <SlidevVideo 
     src="/demo.mp4" 
+    poster="/demo-poster.jpg"
     controls 
     style="max-height: 430px; object-fit: contain;"
-    class="border-2 border-gray-200 dark:border-gray-700 rounded-sm shadow-lg">
-  </video>
+    class="border-2 border-gray-200 dark:border-gray-700 rounded-sm shadow-lg" />
 </div>
 
 ---
 
 <div class="flex flex-col items-center justify-center h-full text-center">
 
-<div class="text-8xl mb-12">🎬</div>
+<div class="text-6xl mb-12">🎬</div>
 
 <div class="text-6xl font-bold mb-16" style="color: var(--slidev-theme-primary);">
 Obrigado!
