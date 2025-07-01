@@ -2,22 +2,37 @@
 title: Dash Streamer
 author: Gabriel Soares
 theme: seriph
-background: /background.png
 drawings:
   enabled: false
   persist: false
 transition: fade
 mdc: true
+layout: image-right
+image: "/cover-image.png"
 ---
 
-# Dash Streamer
+<div class="flex flex-col justify-center h-full">
 
-## Gabriel Soares
+<div class="space-y-12">
+  <h1 class="text-7xl font-bold text-gray-800 dark:text-white leading-tight">
+    Dash Streamer
+  </h1>
+  
+  <div class="text-3xl font-light text-gray-600 dark:text-gray-300">
+    Gabriel Soares
+  </div>
+</div>
 
-<br />
+<div class="mt-20">
+  <div class="text-l text-gray-500 dark:text-gray-400">
+    <span class="font-bold">Disciplina:</span> Sistemas Gráficos e Multimídia
+  </div>
+  <div class="text-l text-gray-500 dark:text-gray-400">
+    <span class="font-bold">Prof.:</span> Tiago Maritan
+  </div>
+</div>
 
-**Disciplina:** Sistemas Gráficos e Multimídia  
-**Prof.:** Tiago Maritan
+</div>
 
 ---
 
