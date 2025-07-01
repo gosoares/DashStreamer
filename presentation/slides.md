@@ -12,24 +12,18 @@ mdc: true
 
 # Dash Streamer
 
-<br />
-
 ## Gabriel Soares
 
 <br />
-<br />
 
-#### **Disciplina:** Sistemas Gráficos e Multimídia
-
-#### **Prof.:** Tiago Maritan
+**Disciplina:** Sistemas Gráficos e Multimídia  
+**Prof.:** Tiago Maritan
 
 ---
 
 # **D**ynamic **A**daptive **S**treaming over **H**TTP
 
-<div class="grid grid-cols-[1fr_2fr] gap-4">
-
-<div>
+<div class="grid grid-cols-[11fr_20fr] gap-8">
 
 <div class="bg-blue-50 dark:bg-blue-900/30 px-4 pt-1 pb-4 rounded-lg">
 
@@ -41,15 +35,11 @@ mdc: true
 
 </div>
 
-</div>
-
 <div>
 
-<div class="py-3 rounded-lg">
+### **Adaptação Dinâmica de Qualidade**
 
-<h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200 text-center">Adaptação Dinâmica de Qualidade</h4>
-
-<svg height="300" viewBox="0 0 560 300">
+<svg height="290" viewBox="0 0 530 300">
   <!-- Quality level labels with bitrates -->
   <text x="15" y="65" class="text-xs fill-gray-700 dark:fill-gray-300 font-medium" >2160p (35 Mbps)</text>
   <text x="15" y="105" class="text-xs fill-gray-700 dark:fill-gray-300 font-medium">1440p (16 Mbps)</text>
@@ -153,8 +143,6 @@ mdc: true
   <text x="508" y="300" class="text-xs fill-gray-600 dark:fill-gray-400 text-anchor-middle">54s</text>
 </svg>
 
-</div>
-
 
 </div>
 
@@ -219,12 +207,13 @@ mdc: true
 </div>
 
 ---
+layout: two-cols-header
+---
 
 # Pipeline de Processamento de Vídeo
-
 <div class="absolute top-11 right-16 flex items-center gap-1">
-<img src="/python-logo.png" class="w-8 h-8" alt="Python" />
-<span class="text-lg font-medium text-yellow-600 dark:text-yellow-400">Python</span>
+  <img src="/python-logo.png" class="w-8 h-8" alt="Python" />
+  <span class="text-lg font-medium text-yellow-600 dark:text-yellow-400">Python</span>
 </div>
 
 <div class="light:block dark:hidden">
@@ -263,9 +252,7 @@ flowchart LR
 
 </div>
 
-<div class="grid grid-cols-2 gap-8 text-sm">
-
-<div>
+::left::
 
 **🔍 Análise**
 
@@ -279,9 +266,7 @@ flowchart LR
 - Limpeza streams problemáticos (mebx)
 - Preservação metadados essenciais
 
-</div>
-
-<div>
+::right::
 
 **🖼️ Thumbnail**
 
@@ -298,17 +283,13 @@ flowchart LR
 - Segmentos de 4s
 - MPD + init/chunk segments
 
-</div>
-
-</div>
-
+---
+layout: two-cols-header
 ---
 
 # Exemplo: Preprocessamento de Vídeo iPhone
 
-<div class="grid grid-cols-2 gap-20">
-
-<div class="justify-center mt-12">
+::left::
 
 <div class="light:block dark:hidden">
 
@@ -353,23 +334,21 @@ flowchart TD
 ```
 
 </div>
-
-<div class="mt-8">
+<br/>
 
 ##### Ferramentas utilizadas:
-<div class="flex items-start gap-3 text-sm">
-<img src="/ffmpeg-logo.svg" class="w-12 h-12" />
-<div class="text-sm">
-<div class="mb-1"><strong>FFprobe</strong> - Análise de streams</div>
-<div><strong>FFmpeg</strong> - Limpeza e preprocessamento</div>
-</div>
-</div>
-</div>
+
+<div class="flex items-start gap-2 text-sm">
+  <img src="/ffmpeg-logo.svg" class="w-11 h-11" alt="FFmpeg" />
+  <div>
+    <strong>FFprobe</strong> - Análise de streams  <br/>
+    <strong>FFmpeg</strong> - Limpeza e preprocessamento
+  </div>
 </div>
 
-<div>
+::right::
 
-  <div class="flex items-center gap-4 mb-4">
+  <div class="flex items-center gap-4 mb-4 ml-4">
   <div class="bg-gray-100 dark:bg-gray-800 p-2 rounded" style="width: 176px; height: 99px;">
   <img src="/cats_video_rotated.jpg" class="w-full h-full object-cover" />
   </div>
@@ -379,18 +358,18 @@ flowchart TD
   </div>
   </div>
 
-  <div class="flex items-center gap-4 mb-4">
+  <div class="flex items-center gap-4 mb-4 ml-13">
   <div class="bg-gray-100 dark:bg-gray-800 p-2 rounded" style="width: 99px; height: 176px;">
   <img src="/cats_video.jpg" class="w-full h-full object-cover" />
   </div>
-  <div class="text-xs">
+  <div class="text-xs ml-11">
   <strong>✅ Correto</strong> - 1080×1920<br/>
   <span class="text-green-600">Portrait adequado</span>
   </div>
   </div>
 
   <div class="flex items-center gap-4">
-  <div class="bg-gray-100 dark:bg-gray-800 p-2 rounded" style="width: 176px; height: 99px;">
+  <div class="bg-gray-100 dark:bg-gray-800 p-2 rounded ml-4" style="width: 176px; height: 99px;">
   <img src="/cats_video.jpg" class="w-full h-full object-fill" />
   </div>
   <div class="text-xs">
@@ -398,11 +377,6 @@ flowchart TD
   <span class="text-red-600">Esticado horizontalmente</span>
   </div>
   </div>
-
-</div>
-
-</div>
-
 
 ---
 
@@ -448,8 +422,8 @@ flowchart TD
 
 ##### Lib utilizada:
 <div class="flex items-center gap-1 text-sm mb-4">
-<img src="/quasar-logo.png" class="w-8 h-8" />
-<div class="text-sm">python_ffmpeg_video_streaming</div>
+  <img src="/quasar-logo.png" class="w-8 h-8" alt="Quasar" />
+  <span class="text-sm">python_ffmpeg_video_streaming</span>
 </div>
 
 #### Arquivos gerados:
@@ -533,8 +507,8 @@ Segmentos de 4 segundos
 # Servidor
 
 <div class="absolute top-11 right-16 flex items-center gap-1">
-<img src="/flask-logo.svg" class="w-8 h-8" alt="Flask" />
-<span class="text-lg font-medium text-gray-600 dark:text-gray-400">Flask</span>
+  <img src="/flask-logo.svg" class="w-8 h-8" alt="Flask" />
+  <span class="text-lg font-medium text-gray-600 dark:text-gray-400">Flask</span>
 </div>
 
 <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded-lg">
@@ -551,33 +525,38 @@ Segmentos de 4 segundos
 </div>
 
 ---
+layout: two-cols-header
+---
 
 # Cliente
 
 <div class="absolute top-11 right-16 flex items-center gap-1">
-<img src="/vuejs-logo.svg" class="w-8 h-8" alt="vue.js" />
-<span class="text-lg font-medium text-green-600 dark:text-green-400">vue.js</span>
+  <img src="/vuejs-logo.svg" class="w-8 h-8" alt="Vue.js" />
+  <span class="text-lg font-medium text-green-600 dark:text-green-400">Vue.js</span>
 </div>
 
-<div class="flex flex-row gap-6 items-center justify-center" style="width:100%;">
-  <img src="/client_homepage.png" alt="Homepage" style="max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
-  <img src="/client_upload.png" alt="Upload Page" style="max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
-</div>
+::left::
+<img src="/client_homepage.png" alt="Homepage" class="max-h-[420px] object-contain shadow-lg" />
 
+::right::
+<img src="/client_upload.png" alt="Upload Page" class="max-h-[420px] object-contain shadow-lg ml-4" />
+
+---
+layout: two-cols-header
 ---
 
 # Player
 
 <div class="absolute top-11 right-16 flex items-center gap-1">
-<img src="/dashjs-logo.png" class="w-8 h-8" alt="dash.js" />
-<span class="text-lg font-medium text-gray-600 dark:text-gray-400">dash.js</span>
+  <img src="/dashjs-logo.png" class="w-8 h-8" alt="dash.js" />
+  <span class="text-lg font-medium text-gray-600 dark:text-gray-400">dash.js</span>
 </div>
 
+::left::
+<img src="/client_player.png" alt="Player Page" class="max-h-[420px] object-contain shadow-lg" />
 
-<div class="flex flex-row gap-6 items-center justify-center" style="width:100%;">
-  <img src="/client_player.png" alt="Player Page" style="max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
-  <img src="/client_player_bottom.png" alt="Player Page Bottom" style="max-height:420px; width:auto; height:auto; object-fit:contain; box-shadow:0 4px 24px #0002;" />
-</div>
+::right::
+<img src="/client_player_bottom.png" alt="Player Page Bottom" class="max-h-[420px] object-contain shadow-lg ml-4" />
 
 ---
 
@@ -598,7 +577,7 @@ Segmentos de 4 segundos
 
 <div class="text-6xl mb-12">🎬</div>
 
-<div class="text-6xl font-bold mb-16" style="color: var(--slidev-theme-primary);">
+<div class="text-6xl font-bold mb-16 text-primary">
 Obrigado!
 </div>
 
